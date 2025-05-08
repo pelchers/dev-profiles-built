@@ -1,4 +1,4 @@
-interface FeatureToggles {
+export interface FeatureToggles {
   showTestPanel: boolean;
   // Add more feature toggles here as needed
   // Example:

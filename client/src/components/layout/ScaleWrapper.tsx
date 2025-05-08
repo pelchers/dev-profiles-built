@@ -1,5 +1,4 @@
-import { FC, ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { getScaledStyles } from '../../utils/featureConfig';
 
 interface ScaleWrapperProps {
@@ -8,7 +7,7 @@ interface ScaleWrapperProps {
 
 const ScaleWrapper: FC<ScaleWrapperProps> = ({ children }) => {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-  
+
   useEffect(() => {
     const handleResize = () => setScreenWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -16,13 +15,7 @@ const ScaleWrapper: FC<ScaleWrapperProps> = ({ children }) => {
   }, []);
 
   return (
-    <div 
-      style={{
-        ...getScaledStyles(screenWidth),
-        minHeight: '100%',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ ...getScaledStyles(screenWidth), minHeight: '100%', overflow: 'hidden' }}>
       {children}
     </div>
   );
