@@ -1,0 +1,204 @@
+# Server Configuration
+PORT=3000
+NODE_ENV=production
+
+# Email Configuration (Choose one of these services)
+
+# Option 1: Gmail (Default)
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-production-gmail@gmail.com
+EMAIL_PASS=your-16-char-app-password     # No spaces in actual password
+EMAIL_RECIPIENT=your-production-recipient@gmail.com
+
+# Option 2: Outlook/Office 365 (Uncomment to use)
+# EMAIL_SERVICE=outlook
+# EMAIL_USER=your-production-outlook@outlook.com
+# EMAIL_PASS=your-production-app-password
+# EMAIL_RECIPIENT=your-production-recipient@example.com
+
+# Important Production Notes:
+# 1. Make sure NODE_ENV=production is set in your hosting platform
+# 2. Remove all spaces from the EMAIL_PASS value
+# 3. For Gmail: Enable 2-Step Verification and generate an App Password
+# 4. For Outlook: Use an App Password if 2FA is enabled
+# 5. EMAIL_RECIPIENT can be different from EMAIL_USER
+# 6. Do not use quotes around values
+
+
+
+
+
+I see the issue from the error logs. The Gmail authentication is failing with the error: "Username and Password not accepted". This typically happens when:
+
+1. You're using your regular Gmail password instead of an App Password
+2. The App Password isn't correctly formatted
+3. 2-Step Verification isn't enabled (required for App Passwords)
+
+Here's how to fix it:
+
+1. First, enable 2-Step Verification in your Google Account:
+   - Go to https://myaccount.google.com/security
+   - Enable 2-Step Verification if not already enabled
+
+2. Generate an App Password:
+   - Go to https://myaccount.google.com/apppasswords
+   - Select "Mail" as the app
+   - Select "Other (Custom name)" as the device
+   - Name it something like "Nodemailer App"
+   - Copy the 16-character password that Google generates
+
+3. Update your `.env` file with the new App Password:
+```env
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-gmail@gmail.com
+EMAIL_PASS=xxxx xxxx xxxx xxxx  # The 16-character app password from Google
+EMAIL_RECIPIENT=your-gmail@gmail.com
+```
+
+Important notes:
+- The App Password is 16 characters with no spaces
+- Make sure there are no quotes around the values in the .env file
+- The EMAIL_USER should be your full Gmail address
+- The EMAIL_RECIPIENT can be the same as EMAIL_USER if you want to receive the emails at the same address
+
+After updating the .env file with the correct App Password, restart your server and try the form again. The error logs show that the environment variables are being read (Email User: Set, Email Pass: Set), but Gmail is rejecting the credentials, which indicates this is specifically an authentication issue with Gmail.
+
+Would you like me to provide any additional guidance on setting up the App Password or troubleshooting the authentication?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(WE DID THIS JUST AN FYI)
+
+In build/production mode, we need to make sure:
+
+1. The `NODE_ENV` is set to 'production' in the `.env` file
+2. The Gmail/Outlook credentials are properly configured
+
+Let's update the `emailConfig.js` to handle both environments cleanly:
+
+```javascript
+// server/flows/contact/emailConfig.js
+import nodemailer from 'nodemailer';
+
+export async function createEmailTransporter() {
+  // Add debug logging
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Email Service:', process.env.EMAIL_SERVICE);
+  console.log('Email User:', process.env.EMAIL_USER ? 'Set' : 'Not Set');
+  console.log('Email Pass:', process.env.EMAIL_PASS ? 'Set' : 'Not Set');
+  
+  // Development mode - use Ethereal for testing
+  if (process.env.NODE_ENV === 'development') {
+    const testAccount = await nodemailer.createTestAccount();
+    console.log('Ethereal Test Account:', testAccount.user); // Log the test email for reference
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  }
+
+  // Production mode - use real email service
+  const emailService = process.env.EMAIL_SERVICE?.toLowerCase() || 'gmail';
+  
+  if (emailService === 'outlook') {
+    return nodemailer.createTransport({
+      host: 'smtp-mail.outlook.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  } else {
+    // Gmail configuration
+    return nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  }
+}
+```
+
+And let's create a production-specific `.env` file template:
+
+```env
+# Production environment settings (.env.production)
+NODE_ENV=production
+PORT=3000
+
+# Email Configuration (Choose one service and comment out the other)
+
+# Gmail Configuration
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-production-gmail@gmail.com
+EMAIL_PASS=your-production-app-password
+EMAIL_RECIPIENT=your-production-recipient@example.com
+
+# Outlook Configuration (uncomment to use)
+# EMAIL_SERVICE=outlook
+# EMAIL_USER=your-production-outlook@outlook.com
+# EMAIL_PASS=your-production-app-password
+# EMAIL_RECIPIENT=your-production-recipient@example.com
+```
+
+For production deployment:
+1. Make sure to set `NODE_ENV=production` in your hosting environment (like Render.com)
+2. Set up the email credentials as environment variables in your hosting platform
+3. Test the production build locally first:
+   ```powershell
+   $env:NODE_ENV='production'
+   npm run build
+   npm start
+   ```
+
+Would you like me to:
+1. Create the production environment file?
+2. Add build-specific configurations?
+3. Add more detailed logging for production debugging?
