@@ -59,6 +59,12 @@ Your job is to:
 
 > These define the data shape, field behavior, optionality conventions, and relational logic. Refer to them when modeling or updating Prisma schemas.
 
+### 🔹 **Setup-Instructions**
+
+* `/ai-docs/setup-instructions.md`
+
+> These outline instructions on setting up the project form the root.
+
 ---
 
 ## 🧭 Required Understanding Before Proceeding
