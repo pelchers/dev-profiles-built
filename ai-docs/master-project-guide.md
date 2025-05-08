@@ -37,40 +37,83 @@ You are building a **developer-focused social platform** with optional company a
 
 ## ✅ 1. Full Folder Structure
 
+````
 ```
-dev-profiles-app/
-├── client/             # Vite React frontend
+dev-profiles-built/
+├── .git/
+├── .vscode/
+├── ai-docs/
+│   ├── flows/
+│   ├── master-project-guide-variants/
+│   ├── style-and-components/
+│   ├── base-pages-components-guide.md
+│   ├── master-guide-clarification-notes.md
+│   ├── master-project-guide.md
+│   ├── setup-instructions.md
+├── app-docs/
+│   ├── chats/
+│   │   ├── first-chats.md
+│   │   ├── second-chats.md
+│   ├── reference/
+├── client/
+│   ├── public/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── profiles/
-│   │   │   ├── projects/
-│   │   │   ├── posts/
-│   │   │   ├── messages/
-│   │   │   └── common/
+│   │   │   ├── flows/
+│   │   │   │   ├── profiles/
+│   │   │   │   ├── projects/
+│   │   │   │   ├── posts/
+│   │   │   │   ├── messages/
+│   │   │   ├── common/
+│   │   │   ├── layout/
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Footer.tsx
 │   │   ├── pages/
-│   │   ├── hooks/
+│   │   │   ├── Home.tsx
+│   │   │   ├── About.tsx
 │   │   ├── types/
-│   │   └── App.tsx
-│   └── index.html
-│
-├── server/             # Express API backend
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── index.css
+│   ├── index.html
+├── server/
 │   ├── flows/
 │   │   ├── users/
-│   │   ├── posts/
 │   │   ├── projects/
+│   │   ├── posts/
 │   │   ├── messages/
-│   │   └── tags/
-│   ├── prismaClient.ts
-│   └── server.ts
-│
+│   │   ├── tags/
+│   ├── common/
+│   │   ├── types/
+│   ├── server.js
 ├── prisma/
-│   └── schema.prisma
-│
+├── json/
+│   ├── flows/
 ├── media/
+│   ├── images/
+│   ├── videos/
+│   ├── documents/
+├── useful-info/
+├── variant-files-root/
 ├── .env
+├── env-reference.md
 ├── package.json
-└── tailwind.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── vite.config.ts
 ```
+
+> **Flow Convention Note:**
+> All flows (features) follow the standard modular structure:
+>
+> * `client/src/components/flows/[feature]/` — UI logic for specific flows
+> * `server/flows/[feature]/` — backend route/controller/service/type structure
+> * `json/flows/` — optional static fallbacks (used if `USE_JSON_DB=true`)
+
+> File generation, feature toggles, layout behavior, and UI rules are based on this modular flow pattern.
+
+````
 
 > **Explanation:**
 > Component-level modularity by feature flow. All schema logic handled in `schema.prisma`. Communication is API-driven via REST endpoints.
@@ -91,7 +134,7 @@ dev-profiles-app/
 * Conditional fields per user type (developer vs. company)
 * GitHub integration optional
 
-> **See `schema.prisma` file for full schema.**
+> **See ****`schema.prisma`**** file for full schema.**
 
 ---
 
