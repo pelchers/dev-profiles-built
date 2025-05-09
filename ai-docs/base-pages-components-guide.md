@@ -6,179 +6,288 @@
 
 This guide outlines:
 
-* Base setup for **pages** and **components**
-* Fully mobile-first, responsive layout structure
-* Clean, scalable Vite + React + Tailwind implementation
-* Design conventions using the **60/30/10 visual rule**
-* Component grouping by feature: profiles, posts, projects, messages
+* Minimalist base setup with arcade-inspired interactive elements
+* Clean, responsive layouts with subtle neon accents
+* Modern React + TypeScript + Tailwind implementation
+* Consistent use of white glow effects and arcade green/blue accents
+* Component organization focused on reusability and maintainability
 
-✅ Modular, scalable foundation for any full-stack social dev app.
-
----
-
-# 📁 Pages Included
-
-| Page            | Purpose                                            |
-| --------------- | -------------------------------------------------- |
-| Home.tsx        | Landing and onboarding page                        |
-| Profile.tsx     | View user profile (dev or company)                 |
-| EditProfile.tsx | Full editable profile form                         |
-| Project.tsx     | Display user project(s)                            |
-| Explore.tsx     | Tag-based, stack-based or interest-based discovery |
-| Company.tsx     | View company profiles                              |
-| PostDetail.tsx  | View a post and interactions                       |
-| Messages.tsx    | Direct message inbox                               |
-
-✅ Structured to support both social exploration and individual presentation.
+✅ Professional foundation with playful arcade touches
 
 ---
 
-# 📁 Components Included
+# 📁 Pages Structure
 
-| Component Folder | Subcomponents                   | Purpose                        |
-| ---------------- | ------------------------------- | ------------------------------ |
-| `/profiles`      | DevProfileCard, EditForm        | View and update profile        |
-| `/projects`      | ProjectCard, ProjectForm        | View/create/edit user projects |
-| `/posts`         | PostCard, PostForm, LikeButton  | Feed-style posts with likes    |
-| `/messages`      | MessageList, MessageForm        | Conversation UI                |
-| `/common`        | Navbar, Footer, Button, Section | Shared layout and UI helpers   |
+| Page            | Purpose                                            | Key Style Elements                           |
+| --------------- | -------------------------------------------------- | ------------------------------------------- |
+| Home.tsx        | Landing page with centered content                 | Subtle grow/shrink animation (1.08 scale)    |
+| Profile.tsx     | Developer profile view                             | Cards with white glow effects                |
+| EditProfile.tsx | Profile editor                                     | Form elements with arcade-style feedback     |
+| Project.tsx     | Project showcase                                   | Grid layout with hover animations            |
+| Explore.tsx     | Discovery and search                               | Interactive cards with glow effects          |
+| Messages.tsx    | Direct messaging                                   | Clean chat UI with arcade accents           |
 
-✅ Reusable and styled with Tailwind CSS utility-first patterns.
-
----
-
-# 🔄 Mobile-Responsive Layout Rules
-
-| Property      | Rule                                               |
-| ------------- | -------------------------------------------------- |
-| Content Width | Full width with `max-w-screen-lg` center alignment |
-| Padding       | `p-4` on mobile, `p-8`+ on md/lg                   |
-| Typography    | Responsive `text-lg`, `text-xl`, `text-4xl`, etc.  |
-| Grid System   | `grid-cols-1` on mobile, 2–3 cols on md/lg screens |
-
-✅ Clean, content-forward layout at all breakpoints.
+✅ Each page maintains minimalist design with subtle arcade elements
 
 ---
 
-# 🎨 Base Styling – 60/30/10 Design Rules
+# 📁 Core Components
 
-## 1. Color Palette
-
-| %   | Color Type                       | Example                                    |
-| --- | -------------------------------- | ------------------------------------------ |
-| 60% | Neutrals (white/black/gray)      | `#F9FAFB`, `#111827`, Tailwind slate/gray  |
-| 30% | Primary Brand Colors (3 max)     | Indigo, Cyan, Emerald (e.g., `indigo-600`) |
-| 10% | Secondary Accent (alert/special) | Rose, Yellow, Lime, Red (e.g., `rose-500`) |
-
-✅ Balanced color use across background, elements, accents.
-
----
-
-## 2. Font Families
-
-| %   | Font Type           | Purpose                                      |
-| --- | ------------------- | -------------------------------------------- |
-| 60% | System/Legible Font | Body text – e.g., `Inter`, `Sans`, `UI`      |
-| 30% | Display/Brand Font  | Headings – e.g., `Poppins`, `Oswald`         |
-| 10% | Decorative          | Accent/hero areas – e.g., `Lora`, `Playfair` |
-
-✅ Visual hierarchy + personality, without clutter.
-
----
-
-## 3. Other Style Considerations
-
-| %   | Style Rule             | Example                                            |
-| --- | ---------------------- | -------------------------------------------------- |
-| 60% | Minimal elevation      | Border, shadow-sm, no heavy glow                   |
-| 30% | Accent action emphasis | Buttons, interactive hover highlights              |
-| 10% | Transitional dynamics  | Hover animations, responsive flex/grid transitions |
-
-✅ Soft modern polish, ideal for professional UX.
-
----
-
-# 💌 Page Layout Example – `Profile.tsx`
+## Common UI Components
 
 ```tsx
-function Profile({ user }) {
+// Button.tsx - Primary interactive component
+const Button = ({ children, className = '', variant = 'primary', ...props }) => {
+  const baseStyles = `
+    py-2 px-6
+    rounded-full
+    font-bold
+    transition-all duration-150
+    focus:outline-none focus:ring-2 focus:ring-arcade-blue focus:ring-opacity-50
+  `;
+  
+  const variants = {
+    primary: `
+      bg-arcade-green text-black
+      shadow-[0_4px_0_0_#00CFFF]
+      hover:shadow-[0_6px_0_0_#00CFFF] hover:translate-y-[-2px]
+      active:shadow-[0_2px_0_0_#00CFFF] active:translate-y-[2px]
+    `,
+    secondary: `
+      bg-white text-black
+      border-2 border-arcade-green
+      shadow-[0_4px_0_0_#00CFFF]
+      hover:shadow-[0_6px_0_0_#00CFFF] hover:translate-y-[-2px]
+      active:shadow-[0_2px_0_0_#00CFFF] active:translate-y-[2px]
+    `
+  };
+  
   return (
-    <div className="max-w-screen-lg mx-auto w-full p-4 md:p-8">
-      <section className="space-y-6">
-        <h1 className="text-3xl md:text-5xl font-brand">{user.displayName}</h1>
-        <p className="text-gray-600 text-lg md:text-xl font-body">{user.bio}</p>
-      </section>
+    <button 
+      className={`${baseStyles} ${variants[variant]} ${className}`} 
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
 
-      <section className="mt-8 grid gap-6 md:grid-cols-2">
-        {/* Project or Tag Cards */}
-      </section>
+// Card.tsx - Base card component with glow effect
+const Card = ({ children, className = '', ...props }) => {
+  const baseStyles = `
+    bg-[#FAFAFA] 
+    border border-arcade-green 
+    rounded-lg 
+    shadow-[0_0_8px_#fff] 
+    hover:shadow-[0_0_16px_2px_#fff] 
+    transition-shadow duration-200 
+    p-6
+  `;
+  
+  return (
+    <div className={`${baseStyles} ${className}`} {...props}>
+      {children}
     </div>
   );
-}
+};
+
+// Tag.tsx - Interactive tag component
+const Tag = ({ children, className = '', ...props }) => {
+  const baseStyles = `
+    px-3 py-1
+    rounded-full
+    text-sm font-medium
+    transition-transform duration-150
+    hover:animate-tag-grow
+  `;
+  
+  return (
+    <span className={`${baseStyles} ${className}`} {...props}>
+      {children}
+    </span>
+  );
+};
+
+// Section.tsx - Page section wrapper
+const Section = ({ children, className = '', ...props }) => {
+  const baseStyles = `
+    py-8 md:py-12
+    w-full
+  `;
+  
+  return (
+    <section className={`${baseStyles} ${className}`} {...props}>
+      {children}
+    </section>
+  );
+};
 ```
 
-✅ Responsive, mobile-first, readable layout.
-
----
-
-# 💌 Navbar Example – `Navbar.tsx`
+## Layout Components
 
 ```tsx
-import { Link } from 'react-router-dom';
-
-function Navbar() {
+// MainLayout.tsx - Base layout wrapper
+const MainLayout = ({ children }) => {
   return (
-    <nav className="w-full flex justify-between items-center p-4 md:p-6 bg-white shadow-sm">
-      <div className="font-brand text-2xl">DevProfiles</div>
-      <div className="space-x-4 text-sm md:text-base">
-        <Link to="/">Home</Link>
-        <Link to="/explore">Explore</Link>
-        <Link to="/profile">Profile</Link>
-        <Link to="/messages">Messages</Link>
+    <div className="min-h-screen bg-[#FAFAFA]">
+      <Navbar />
+      <main className="max-w-screen-xl mx-auto px-4 md:px-8 py-8">
+        {children}
+      </main>
+    </div>
+  );
+};
+
+// Navbar.tsx - Site navigation
+const Navbar = () => {
+  return (
+    <nav className="sticky top-0 w-full bg-white border-b border-arcade-green">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button className="md:hidden">
+            {/* Hamburger menu */}
+          </button>
+          <Button variant="primary">Bounties</Button>
+        </div>
+        
+        <h1 className="font-brand text-2xl">Dev Profiles</h1>
+        
+        <div className="flex items-center gap-4">
+          <Button variant="primary">Explore</Button>
+          <button className="w-8 h-8 rounded-full bg-arcade-green">
+            {/* Profile icon */}
+          </button>
+        </div>
       </div>
     </nav>
   );
-}
-
-export default Navbar;
+};
 ```
-
-✅ Standard top nav with mobile scaling.
 
 ---
 
-# 💌 Footer Example – `Footer.tsx`
+# 🎨 Base Styling Principles
+
+## Colors and Effects
 
 ```tsx
-function Footer() {
-  return (
-    <footer className="w-full text-center py-6 text-gray-400 text-xs">
-      © 2024 DevProfiles. All rights reserved.
-    </footer>
-  );
-}
-
-export default Footer;
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        arcade: {
+          green: '#00FF5F',
+          blue: '#00CFFF',
+        },
+      },
+      keyframes: {
+        growShrink: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.08)' },
+        },
+        'tag-grow': {
+          '50%': { transform: 'scale(1.1)' },
+        },
+      },
+      animation: {
+        growShrink: 'growShrink 2.2s infinite',
+        'tag-grow': 'tag-grow 0.15s ease-in-out',
+      },
+    },
+  },
+};
 ```
 
-✅ Clean, accessible site footer.
+## Typography
+
+```css
+/* Base text styles */
+.text-brand {
+  @apply font-brand text-3xl md:text-4xl;
+}
+
+.text-body {
+  @apply font-body text-base text-black;
+}
+
+.text-mono {
+  @apply font-mono text-sm;
+}
+```
 
 ---
 
-# ✨ Conclusion
+# 📱 Example Page Implementation
 
-| Area        | Setup                                                  |
-| ----------- | ------------------------------------------------------ |
-| Layout      | Responsive padding, grid, mobile-first                 |
-| Style Rules | 60/30/10 for color, fonts, and layout                  |
-| Components  | Grouped by feature flow (profile, post, project, etc.) |
-| Routing     | Managed via React Router for page-based views          |
-| Base UI     | Navbar, Footer, Section, Card, Button reused app-wide  |
+## Home Page
+```tsx
+function HomePage() {
+  return (
+    <MainLayout>
+      <div className="min-h-[calc(100vh-16rem)] flex flex-col items-center justify-center">
+        <h1 className="font-brand text-4xl md:text-5xl mb-8 animate-growShrink">
+          Welcome to Dev Profiles
+        </h1>
+        
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Button variant="primary">
+            Get Started
+          </Button>
+          <Button variant="secondary">
+            Learn More
+          </Button>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+```
 
-✅ Foundation supports all key UI paths, ready to scale.
+## Profile Page
+```tsx
+function ProfilePage() {
+  return (
+    <MainLayout>
+      <Section>
+        <h1 className="text-brand mb-8">
+          Developer Profile
+        </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card>
+            {/* Profile info */}
+          </Card>
+          
+          <Card>
+            {/* Skills */}
+            <div className="flex flex-wrap gap-2">
+              <Tag>React</Tag>
+              <Tag>TypeScript</Tag>
+              <Tag>Node.js</Tag>
+            </div>
+          </Card>
+          
+          <Card>
+            {/* Projects */}
+          </Card>
+        </div>
+      </Section>
+    </MainLayout>
+  );
+}
+```
 
 ---
 
-# 💬 What's Next?
+# ✅ Implementation Checklist
 
-Would you like full example layouts for Explore, Project, or Post pages next?
+1. [ ] Set up MainLayout with Navbar
+2. [ ] Implement core UI components (Button, Card, Tag, Section)
+3. [ ] Configure Tailwind with custom colors and animations
+4. [ ] Create responsive page layouts
+5. [ ] Add interactive elements with proper hover/focus states
+6. [ ] Test across all breakpoints
+7. [ ] Ensure accessibility standards are met
+
+These base components and layouts provide a clean, professional foundation while maintaining subtle arcade-inspired elements throughout the interface.

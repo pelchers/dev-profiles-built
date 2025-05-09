@@ -1,3 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Honk&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+html, body {
+  overflow: hidden !important;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@layer utilities {
+  @keyframes growShrink {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .animate-growShrink {
+    animation: growShrink 2.2s ease-in-out infinite;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+}
+
+@layer base {
+  .font-brand {
+    font-family: 'Honk', 'Space Grotesk', 'Rajdhani', sans-serif;
+  }
+  .font-body {
+    font-family: 'Inter', 'Rubik', sans-serif;
+  }
+  .font-mono {
+    font-family: 'VT323', 'Orbitron', monospace;
+  }
+} 

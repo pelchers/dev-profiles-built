@@ -1,170 +1,170 @@
-# 🌈 Poppy ROYGB Neon Style – Full Site Styling Conventions
+# 🌈 Arcade Neon Style – Base Site Styling Conventions
 
 ---
 
 # 📚 Overview
 
-The **Poppy ROYGB Neon Style** is designed to be:
+The **Arcade Neon Style** is designed to be:
 
-* Visually exciting, playful, and modern
-* Tag-highlight friendly for both **light and dark modes**
-* Neon-inspired and developer-friendly
-* Ideal for platforms involving tagging, creativity, community
+* Clean and minimalist with arcade-inspired accents
+* Focused on neon glow effects and satisfying interactions
+* Highly readable with careful color contrast
+* Perfect for developer profiles and portfolios
 
-✅ Perfect for sites with interactive content, creative portfolios, or vibrant dev profiles.
+✅ Combines modern minimalism with playful arcade elements
 
 ---
 
 # 🎨 Color System
 
-| Purpose           | Color Example                        | Notes                                           |
-| ----------------- | ------------------------------------ | ----------------------------------------------- |
-| Background        | `#0F0F0F` (dark) / `#FFFFFF` (light) | Core contrast base                              |
-| Red               | `#FF4C4C`                            | Used for errors, urgent tags, highlights        |
-| Orange            | `#FFA500`                            | Alerts, warm CTAs, hover states                 |
-| Yellow            | `#F9FF33`                            | Light-burst highlights, attention-grab CTAs     |
-| Green             | `#00FF94`                            | Success states, clean success-oriented features |
-| Blue              | `#00CFFF`                            | System/UI accent, cooler tone for balance       |
-| Indigo/Purple     | `#C54FFF`                            | Expressive personality, tag backgrounds         |
-| White Neon        | `#E0E0E0`                            | Borders, muted text, hover transitions          |
-| Blacklight Accent | `#0F0F0F` + glow border              | Deep contrast framing                           |
+| Purpose           | Color Code  | Usage                                           |
+| ----------------- | ----------- | ----------------------------------------------- |
+| Background Light  | `#FAFAFA`   | Card backgrounds, light mode base               |
+| Background Dark   | `#0F0F0F`   | Dark mode base                                 |
+| Arcade Green      | `#00FF5F`   | Primary buttons, borders, success states       |
+| Arcade Blue       | `#00CFFF`   | Shadows, accents, interactive elements         |
+| Neon Red          | `#FF4C4C`   | Error states, warning indicators               |
+| Neon Orange       | `#FFA500`   | Secondary accents, special states              |
+| Neon Yellow       | `#F9FF33`   | Highlights, special indicators                 |
+| Text Primary      | `#000000`   | Main text on light backgrounds                 |
+| Text Secondary    | `#FFFFFF`   | Text on dark or colored backgrounds            |
 
-✅ Easily supports dark/light mode toggles and tag highlight features.
-
----
-
-# 🔤 Fonts
-
-| Font Type    | Font Example                    | Usage                           |
-| ------------ | ------------------------------- | ------------------------------- |
-| Body Font    | `"Inter"`, `"Rubik"`            | Friendly, round, readable       |
-| Heading Font | `"Space Grotesk"`, `"Rajdhani"` | Futuristic, bold headings       |
-| Accent Font  | `"VT323"`, `"Orbitron"`         | Creative, digital-style accents |
-
-✅ Pairs well with tech-inspired, youth-forward, developer themes.
+✅ Colors chosen for maximum readability with arcade flair
 
 ---
 
-# 📐 Layout and Spacing
+# 🔤 Typography
 
-| Element         | Convention                                                  |
-| --------------- | ----------------------------------------------------------- |
-| Section Padding | `px-2 md:px-4 lg:px-8` (minimal to allow edge-to-edge feel) |
-| Content Width   | `max-w-6xl mx-auto`                                         |
-| Grid Gaps       | `gap-8`, `gap-12`                                           |
-| Border Radius   | `rounded-full` for buttons/tags, `rounded-lg` for cards     |
-| Shadow          | `shadow-md`, `shadow-neon`                                  |
+| Font Type    | Font Stack                                      | Usage                           |
+| ------------ | ----------------------------------------------- | ------------------------------- |
+| Brand Font   | `'Honk', 'Space Grotesk', 'Rajdhani', sans-serif` | Logo, headings                 |
+| Body Font    | `'Inter', 'Rubik', sans-serif`                   | General text, UI elements      |
+| Mono Font    | `'VT323', 'Orbitron', monospace`                 | Code blocks, technical text    |
 
-✅ Layouts feel lively, open, responsive — with tight screen usage for modern flair.
+✅ Font combinations balance arcade aesthetics with readability
 
 ---
 
-# 🖼️ Buttons
+# 🖼️ Component Styles
 
-| Property      | Convention                                              |
-| ------------- | ------------------------------------------------------- |
-| Background    | Any ROYGB neon w/ gradient support                      |
-| Text Color    | Black on light, White on dark                           |
-| Hover Effect  | Slight grow + soft push-in (scale-105, translate-y-0.5) |
-| Click Effect  | Full push-in (scale-95, translate-y-1)                  |
-| Border Radius | `rounded-full`                                          |
-| Size          | `py-2 px-6`, `text-sm md:text-base`                     |
-
-Example:
-
+## Cards
 ```tsx
-<button className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-400 text-black py-2 px-6 rounded-full hover:scale-105 hover:translate-y-0.5 active:scale-95 active:translate-y-1 transition-all duration-200">
-  Tag It
-</button>
+// Base Card Style
+const cardStyles = `
+  bg-[#FAFAFA] 
+  border border-arcade-green 
+  rounded-lg 
+  shadow-[0_0_8px_#fff] 
+  hover:shadow-[0_0_16px_2px_#fff] 
+  transition-shadow duration-200 
+  p-6
+`;
 ```
 
-✅ Interactive, expressive, with satisfying hover/click feedback and full-rounded shape.
-
----
-
-# 💫 Cards and Tag Blocks
-
-* **Card BG**: `bg-black/90` on dark mode, `bg-white/95` on light
-* **Border**: `border-blue-400` or `border-gradient-neon`
-* **Shadow**: `shadow-lg hover:shadow-neon`
-* **Rounded Corners**: `rounded-lg`
-* **Tag Style**: `inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-400 text-white`
-* **Hover**: Slight brightness increase, `hover:brightness-110`
-
-Example:
-
+## Buttons
 ```tsx
-<span className="bg-green-400 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-  DevOps
-</span>
+// Base Button Style
+const buttonStyles = `
+  bg-arcade-green text-black
+  py-2 px-6
+  rounded-full
+  font-bold
+  transition-all duration-150
+  shadow-[0_4px_0_0_#00CFFF]
+  hover:shadow-[0_6px_0_0_#00CFFF] hover:translate-y-[-2px]
+  active:shadow-[0_2px_0_0_#00CFFF] active:translate-y-[2px]
+  focus:outline-none focus:ring-2 focus:ring-arcade-blue focus:ring-opacity-50
+`;
 ```
 
-✅ Adds playfulness while maintaining clarity and compactness.
-
----
-
-# 🔄 Animations & Interactions
-
-| Element     | Interaction                               |
-| ----------- | ----------------------------------------- |
-| Hover/Focus | Shadow pulse, color shift                 |
-| Page Load   | Fade-in from `opacity-0`, `translate-y-4` |
-| Buttons     | Grow on hover, push-in on click           |
-| Tags        | Light background pulse or color flicker   |
-
-Example:
-
+## Tags
 ```tsx
-motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
+// Base Tag Style
+const tagStyles = `
+  px-3 py-1
+  rounded-full
+  text-sm font-medium
+  transition-transform duration-150
+  hover:animate-tag-grow
+`;
 ```
 
-✅ Adds a sense of **delight and responsiveness**.
+---
+
+# 🎯 Interactive Elements
+
+## Shadows & Effects
+| Effect Type      | CSS Class                                          | Usage                    |
+| --------------- | -------------------------------------------------- | ------------------------ |
+| Card Shadow     | `shadow-[0_0_8px_#fff]`                            | Default card state       |
+| Hover Glow      | `hover:shadow-[0_0_16px_2px_#fff]`                | Card hover state         |
+| Button Shadow   | `shadow-[0_4px_0_0_#00CFFF]`                      | Button depth effect      |
+| Button Hover    | `shadow-[0_6px_0_0_#00CFFF] translate-y-[-2px]`   | Button hover state       |
+| Button Active   | `shadow-[0_2px_0_0_#00CFFF] translate-y-[2px]`    | Button press state       |
+
+## Animations
+```css
+@keyframes growShrink {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tag-grow {
+  50% { transform: scale(1.1); }
+}
+```
 
 ---
 
-# 🏷️ Tag Color Utility Rules
+# 📐 Layout Conventions
 
-| Tag Type   | Suggested Color |
-| ---------- | --------------- |
-| `frontend` | `bg-indigo-400` |
-| `backend`  | `bg-blue-400`   |
-| `database` | `bg-green-400`  |
-| `devops`   | `bg-yellow-300` |
-| `testing`  | `bg-pink-400`   |
-| `design`   | `bg-red-400`    |
-
-✅ Pill-style, rounded full tags with solid backgrounds.
+| Element         | Base Classes                                               |
+| -------------- | --------------------------------------------------------- |
+| Page Container | `max-w-screen-xl mx-auto px-4 md:px-8`                    |
+| Section        | `py-8 md:py-12`                                           |
+| Card Grid      | `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`   |
+| Button Group   | `flex flex-wrap gap-4`                                    |
 
 ---
 
-# ✍️ Style Composition – 60/30/10 Visual Rule
+# 🎮 Component Naming Convention
 
-| Ratio | What It Applies To                       | Example                   |
-| ----- | ---------------------------------------- | ------------------------- |
-| 60%   | Base contrast & neutral surfaces         | Backgrounds, containers   |
-| 30%   | Primary color pops (neon hues)           | Tags, buttons, headlines  |
-| 10%   | Unique character (glow, animation, text) | Tag outlines, hover glows |
+| Component Type | Prefix    | Example               |
+| ------------- | --------- | --------------------- |
+| Layout        | None      | `Navbar.tsx`          |
+| Common UI     | None      | `Button.tsx`          |
+| Feature       | None      | `ProfileCard.tsx`     |
+| Page          | None      | `HomePage.tsx`        |
 
-✅ Consistent color and accent discipline across the site.
-
----
-
-# 📋 Component Naming Convention
-
-| Component       | Example               |
-| --------------- | --------------------- |
-| Tag Badge       | `NeonTag.tsx`         |
-| Section Wrapper | `NeonSection.tsx`     |
-| Post Card       | `NeonPostCard.tsx`    |
-| Profile Block   | `NeonProfileCard.tsx` |
-
-✅ Keeps styling encapsulated, themed, and easy to evolve.
+✅ Keep it simple and descriptive without unnecessary prefixes
 
 ---
 
-# ✅ Finished: Poppy ROYGB Neon Site Style Guide
+# 💫 Responsive Design
 
-Use this system to inject vibrant personality and tactile delight into your tagging, post-driven, or creative developer platform — optimized for both light and dark mode, and enriched with interactive button feedback, pill-shaped tag visuals, and minimal-padded edge-to-edge grid layouts.
+| Breakpoint | Screen Size | Major Changes                                |
+| ---------- | ----------- | -------------------------------------------- |
+| Default    | Mobile      | Single column, stacked navigation            |
+| md         | 768px+      | Multi-column grids, horizontal navigation    |
+| lg         | 1024px+     | Larger text, more spacing                    |
+
+Always design mobile-first, then enhance for larger screens.
+
+---
+
+# ✅ Implementation Guidelines
+
+1. Use white glow effects for cards instead of colored shadows for a cleaner look
+2. Maintain consistent button interaction with push/depth effect
+3. Apply animations sparingly - primarily for brand elements and user feedback
+4. Keep text highly readable with appropriate contrast
+5. Use arcade green for primary actions and arcade blue for depth/shadows
+6. Implement hover states that enhance rather than change the base design
+7. Ensure all interactive elements have clear focus states for accessibility
+
+These guidelines create a cohesive arcade-inspired interface while maintaining professional usability.
