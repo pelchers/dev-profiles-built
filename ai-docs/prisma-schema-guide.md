@@ -103,6 +103,69 @@ Supports visual classification for tag/category coloring.
 
 ---
 
+## 📦 Repo Model (GitHub Integration)
+
+The `Repo` model enables deep GitHub integration for both users and projects.
+
+* Stores metadata for any GitHub repo added by a user or linked to a project
+* Fields mirror GitHub API data: `githubId`, `githubOwner`, `githubName`, `fullName`, `description`, `htmlUrl`, `homepage`, `language`, `topics`, `license`, `forksCount`, `stargazersCount`, `watchersCount`, `openIssuesCount`, `isPrivate`, `isFork`, `createdAt`, `updatedAt`, `pushedAt`
+* `owner`: links to the user who added/owns the repo
+* `project`: optional link to a project this repo is associated with
+* `notes` and `featured`: for custom notes and highlighting repos
+
+**Example use cases:**
+- Show a user's top GitHub repos on their profile
+- Link a project to its source repo and display live stats
+- Cache repo data for fast frontend rendering
+
+---
+
+## 🏷️ Enums
+
+### `UserType`
+* `DEVELOPER` – Individual developer
+* `COMPANY` – Organization/company
+
+### `DevFocus`
+* `FRONTEND`, `BACKEND`, `FULLSTACK`, `API`, `DESIGN`, `ANIMATION`, `DEVOPS`, `DATA`, `MOBILE`, `QA`, `PRODUCT`, `OTHER`
+* Used for filtering, search, and profile focus
+
+### `Role`
+* `USER` – Default
+* `ADMIN` – Platform admin
+
+---
+
+## 🔗 Bi-directional Repo Relations
+
+* **User.repos**: All repos added/owned by a user
+* **Project.repos**: All repos associated with a project
+* Enables queries like: "Show all repos for this user" or "List all repos linked to this project"
+
+---
+
+## 🛠️ Advanced Project Fields
+
+The `Project` model supports advanced fields for real-world use:
+
+* `analyticsEnabled`: Boolean, whether analytics are enabled for this project
+* `isClientWork`: Boolean, if the project was built for a client
+* `isWhiteLabeled`: Boolean, if the project is white-labeled
+* `orgName`: Organization name (if applicable)
+* `infraDetails`, `changelog`, `featureStatus`: JSON fields for infrastructure, change logs, and feature tracking
+* `testCoverage`: String, e.g., code coverage percentage or badge
+
+---
+
+## 🎨 TagColor Model Details
+
+* `type`: 'category' or 'subcategory' (for organizing tags)
+* `category`: Optional grouping for tags
+* `color`: Tailwind class (e.g., 'bg-blue-500') for consistent frontend styling
+* Used to visually distinguish tags, tech stacks, or categories across the app
+
+---
+
 ## 🔄 Querying Highlights
 
 ### My Projects

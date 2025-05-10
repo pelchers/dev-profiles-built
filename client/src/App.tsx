@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Styles from './pages/Styles';
 import Boilerplates from './pages/Boilerplates';
+import Contact from './pages/Contact';
 
 const App = () => (
   <div className="overflow-hidden">
@@ -14,6 +15,7 @@ const App = () => (
         <Route path="/about" element={<About />} />
         <Route path="/styles" element={<Styles />} />
         <Route path="/boilerplates" element={<Boilerplates />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </MainLayout>
   </div>

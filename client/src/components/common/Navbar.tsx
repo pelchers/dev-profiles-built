@@ -59,6 +59,9 @@ const Navbar = () => {
                 <DropdownItem to="/styles" onClick={() => setMenuOpen(false)}>
                   Styles
                 </DropdownItem>
+                <DropdownItem to="/contact" onClick={() => setMenuOpen(false)}>
+                  Contact
+                </DropdownItem>
               </div>
             </Dropdown>
           )}
