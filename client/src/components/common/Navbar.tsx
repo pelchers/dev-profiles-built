@@ -42,8 +42,8 @@ const Navbar = () => {
           {menuOpen && (
             <Dropdown align="left">
               <div className="p-3 border-b border-arcade-blue/20">
-                <Button as={Link} to="/bounties" className="w-full mb-2 block md:hidden" onClick={() => setMenuOpen(false)}>
-                  Bounties
+                <Button as={Link} to="/boilerplates" className="w-full mb-2 block md:hidden" onClick={() => setMenuOpen(false)}>
+                  Boilerplates
                 </Button>
                 <Button as={Link} to="/explore" className="w-full block md:hidden" onClick={() => setMenuOpen(false)}>
                   Explore
@@ -66,8 +66,8 @@ const Navbar = () => {
 
         {/* Desktop navigation buttons */}
         <div className="hidden md:block">
-          <Button as={Link} to="/bounties">
-            Bounties
+          <Button as={Link} to="/boilerplates">
+            Boilerplates
           </Button>
         </div>
       </div>
