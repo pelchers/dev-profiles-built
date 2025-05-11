@@ -6,9 +6,10 @@ import About from './pages/About';
 import Styles from './pages/Styles';
 import Boilerplates from './pages/Boilerplates';
 import Contact from './pages/Contact';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => (
-  <div className="overflow-hidden">
+  <div>
     <MainLayout>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -16,6 +17,7 @@ const App = () => (
         <Route path="/styles" element={<Styles />} />
         <Route path="/boilerplates" element={<Boilerplates />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </MainLayout>
   </div>

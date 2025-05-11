@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
 import { Dropdown, DropdownItem } from "./Dropdown";
+import ProfilePage from './../../pages/ProfilePage';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,6 +62,9 @@ const Navbar = () => {
                 </DropdownItem>
                 <DropdownItem to="/contact" onClick={() => setMenuOpen(false)}>
                   Contact
+                </DropdownItem>
+                <DropdownItem to="/profile" onClick={() => setMenuOpen(false)}>
+                  Profile
                 </DropdownItem>
               </div>
             </Dropdown>

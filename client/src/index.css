@@ -8,7 +8,6 @@
 @tailwind utilities;
 
 html, body {
-  overflow: hidden !important;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -42,4 +41,13 @@ html, body {
   .font-mono {
     font-family: 'VT323', 'Orbitron', monospace;
   }
+}
+
+/* Hide scrollbars globally but allow scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
 } 

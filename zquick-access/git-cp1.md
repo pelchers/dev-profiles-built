@@ -24,7 +24,36 @@ git push origin project-setup
 git checkout project-setup-plus
 ```
 
-I removed the unnecessary pull commands. This is a more direct workflow when you're the only one working on these branches.
+
+
+
+# Stage all changes
+git add .
+
+# Commit the changes with a descriptive message
+git commit -m "Contact form, backend fixes, and boilerplate setup"
+
+# Push to the current working branch (project-setup-plus)
+git push origin project-setup-plus
+
+# Update main with these changes
+git checkout main
+git merge project-setup-plus
+git push origin main
+
+# Update project-setup branch with these changes
+git checkout project-setup
+git merge project-setup-plus
+git push origin project-setup
+
+# Create and push to the new branch working-boiler-1 from project-setup
+git checkout -b working-boiler-1
+git push origin working-boiler-1
+
+# Switch back to your working branch
+git checkout project-setup-plus
+
+
 
 
 

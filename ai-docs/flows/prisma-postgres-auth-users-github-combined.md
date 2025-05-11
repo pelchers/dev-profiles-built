@@ -13,6 +13,8 @@ This guide provides a comprehensive, step-by-step approach to setting up a secur
 7. [JWT Authentication Middleware](#7-jwt-authentication-middleware)
 8. [Password Reset Flow](#8-password-reset-flow)
 9. [User Profile Management](#9-user-profile-management)
+9.5. [Schema-Driven Profile Page with Toggle Edit Mode](#9.5-schema-driven-profile-page-with-toggle-edit-mode)
+9.75. [Tag Field UX and GitHub Data Sync Logic](#9.75-tag-field-ux-and-github-data-sync-logic)
 10. [GitHub Integration](#10-github-integration)
 11. [Security Enhancements](#11-security-enhancements)
 12. [Email Service Implementation](#12-email-service-implementation)
@@ -165,7 +167,7 @@ Create a folder structure for authentication:
 ```
 server/
   flows/
-    users/
+    auth/
       auth.utils.ts
       auth.controller.ts
       auth.routes.ts
@@ -255,6 +257,34 @@ export const extractGitHubUsername = (url: string): string => {
 - Password hashing is properly configured with industry-standard salt rounds
 - Token generation uses cryptographically secure random bytes
 - GitHub username extraction uses regex for consistent parsing
+
+---
+
+## 4.5. Profile Infrastructure
+
+**Folder Structure:**
+```
+server/
+  flows/
+    profile/
+      profile.controller.ts
+      profile.routes.ts
+      profile.types.ts
+      profile.utils.ts
+      profile.sync.ts
+```
+
+**What This Section Does:**
+- Centralizes all profile CRUD and management logic in a dedicated flow.
+- Handles all profile field mapping, including tag arrays (for pill/tag UI) and GitHub fields.
+- Exposes endpoints for getting/updating profiles, syncing GitHub data, and managing tags.
+- Makes it easy to extend profile features (activity feed, badges, etc.) in the future.
+
+**Configuration Notes:**
+- Profile endpoints should be protected (require authentication via the same JWT middleware as auth).
+- Tag fields should use array types in the schema and be handled as pill tags in the frontend.
+- GitHub fields are always synced from the backend, never user-editable.
+- All profile logic is compatible with the authentication flow and uses the same user ID and JWT-based permissions.
 
 ---
 
@@ -526,7 +556,7 @@ Create a file `server/common/middleware/auth.middleware.ts`:
 
 ```typescript
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../../flows/users/auth.utils';
+import { verifyToken } from '../../flows/auth/auth.utils';
 
 // Extend Express Request type to include user information
 declare global {
@@ -740,9 +770,11 @@ router.post('/reset-password', async (req, res) => {
 
 ## 9. User Profile Management
 
+This section uses the profile infrastructure described above. All profile CRUD, tag handling, and GitHub sync logic is implemented in the `server/flows/profile/` flow, and all endpoints are protected by the authentication middleware described in the auth infrastructure section. Only authenticated users can update their own profile, and all profile data is fetched and updated using the centralized profile controller and routes.
+
 ### Creating the Controller
 
-Create a new file `server/flows/users/profile.controller.ts`:
+Create a new file `server/flows/profile/profile.controller.ts`:
 
 ```typescript
 import { PrismaClient } from '@prisma/client';
@@ -855,7 +887,7 @@ export const updatePassword = async (
 
 ### Creating Profile Routes
 
-Create a new file `server/flows/users/profile.routes.ts`:
+Create a new file `server/flows/profile/profile.routes.ts`:
 
 ```typescript
 import express from 'express';
@@ -923,6 +955,98 @@ export default router;
 - Sensitive fields are filtered out from both input and output
 - Password changes require verification of the current password
 - GitHub username is automatically extracted from the URL when updating profiles
+
+---
+
+## 9.5. Schema-Driven Profile Page with Toggle Edit Mode
+
+A modern, scalable approach to user profiles is to use a **single profile page** that can toggle between view and edit mode. This is more maintainable and future-proof than having separate view/edit pages.
+
+### **How it Works**
+- All user fields (from your Prisma schema) are displayed on the profile page.
+- If the logged-in user is viewing their own profile, an "Edit" button is shown.
+- Clicking "Edit" turns all fields into editable inputs (text, dropdown, tag pills, etc.).
+- Clicking "Save" switches back to read-only mode and updates the backend.
+- Other users always see the profile in read-only mode.
+
+### **Benefits**
+- **DRY:** One set of components for both view and edit.
+- **Easy to extend:** Add new fields to the schema and they appear on the profile page.
+- **Consistent UX:** No page navigation, instant feedback.
+- **Permissions:** Only the owner can edit their profile.
+
+### **Implementation Tips**
+- Create a generic `ProfileField` component that takes a field config (label, type, value, options, etc.) and renders the correct display or input.
+- Use a config array to map schema fields to display/edit components.
+- Use state to track `isEditing` and switch all fields accordingly.
+- For array fields (tags, skills, etc.), use pill/tag UIs with add/remove buttons.
+- For enums, use dropdowns.
+- For text, use inputs or textareas.
+
+**Example field config:**
+```js
+const profileFields = [
+  { key: 'displayName', label: 'Display Name', type: 'text' },
+  { key: 'bio', label: 'Bio', type: 'textarea' },
+  { key: 'githubUsername', label: 'GitHub Username', type: 'text' },
+  { key: 'languages', label: 'Languages', type: 'tags' },
+  // ...add all fields from your schema
+];
+```
+
+**Example usage:**
+```tsx
+{profileFields.map(field =>
+  <ProfileField
+    key={field.key}
+    label={field.label}
+    value={user[field.key]}
+    type={field.type}
+    editable={isEditing}
+    onChange={...}
+  />
+)}
+```
+
+**Permissions:**
+- Only show the "Edit" button if `currentUser.id === user.id`.
+- All fields are read-only for other users.
+
+## UI notes
+
+### 🏷️ Pill Tag UX for All Tag Fields
+- **All tag fields** (e.g., `languages`, `frameworks`, `tools`, `specialties`, `tags`, `interests`, etc.) should use a pill/tag UI:
+  - **Display:** Each tag is shown as a pill (rounded box) with the tag text.
+  - **Add:** User types in a new tag and clicks an add button (or presses Enter); the new tag appears as a pill above the input.
+  - **Remove:** Each pill has an "x" button on the right; clicking it removes the tag from the list.
+  - **Edit Mode:** Pills are only editable (add/remove) when the profile is in edit mode and the current user is the profile owner.
+  - **Read-Only Mode:** Pills are displayed but not editable for other users or when not editing.
+---
+
+**This approach makes it trivial to keep your profile and edit experience in sync, and to add new fields as your schema evolves.**
+
+---
+
+## 9.75. GitHub Data Sync Logic
+
+### 🐙 GitHub Field Sync Logic
+- **All GitHub-related fields** (e.g., `githubProfile`, `githubAvatarUrl`, `githubHtmlUrl`, `githubBio`, etc.) are **not user-editable**. They are always populated by pulling from the GitHub REST API.
+- **How the sync works:**
+  1. **On Profile Creation:** When a user enters their GitHub link (or username) during registration, the backend fetches their GitHub profile using the REST API and populates all GitHub fields in the database.
+  2. **On Profile Update:**
+     - If the user updates their GitHub link/username, the backend fetches the latest GitHub profile and updates all GitHub fields.
+     - If the GitHub link/username is unchanged, no fetch is performed.
+  3. **On Scheduled Sync:** Every 24 hours, a backend job fetches the latest GitHub profile for all users with a GitHub link/username and updates the relevant fields. This ensures profiles stay up-to-date with the user's public GitHub data.
+- **Frontend:**
+  - GitHub fields are always displayed as read-only (never editable by the user).
+  - If the user enters or changes their GitHub link, show a loading indicator while the backend fetches and updates the profile.
+- **Backend:**
+  - Use the GitHub REST API (`GET /users/{username}`) to fetch the user object.
+  - Map the returned fields to your schema (see previous schema update).
+  - Store the full object in `githubProfile` and key fields in their respective columns.
+  - Handle errors gracefully (e.g., invalid username, API rate limits).
+
+**This approach ensures all tag fields have a modern, user-friendly UX, and all GitHub data is always accurate and up-to-date, both on user actions and on a regular schedule.**
 
 ---
 
@@ -1473,8 +1597,8 @@ import { PrismaClient } from '@prisma/client';
 import { apiLimiter, authLimiter, githubLimiter } from './common/middleware/rate-limit.middleware';
 
 // Import routes
-import authRoutes from './flows/users/auth.routes';
-import profileRoutes from './flows/users/profile.routes';
+import authRoutes from './flows/auth/auth.routes';
+import profileRoutes from './flows/profile/profile.routes';
 import githubRoutes from './flows/github/github.routes';
 
 // Initialize Express app
@@ -1505,7 +1629,7 @@ app.use(cors(corsOptions));
 // Apply general rate limiting to all routes
 app.use(apiLimiter);
 
-// Apply strict rate limiting to authentication routes
+// Apply stricter rate limiting to auth routes
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 
@@ -2270,3 +2394,81 @@ The application now offers a complete authentication and user management experie
 For a live demo of this integration, see the GitHub card components on a user's profile page after they've added a GitHub URL. The extraction of GitHub username from the URL happens automatically, and the system handles API rate limits and error states gracefully.
 
 As your application grows, you can extend this system with more social integrations, additional profile fields, and enhanced GitHub functionality such as repository listings or activity feeds. 
+
+---
+
+## Company Open Roles Field: Schema & Usage
+
+### How It Looks in the Schema
+
+```prisma
+// Company-only fields
+companyName    String?
+companySize    String?         // e.g. "1-10", "11-50", "51-200"
+industry       String?
+hiring         Boolean?
+openRoles      Json?           // [{ title, description, requirements, benefits, type, url, location, salary }]
+foundingYear   Int?
+teamLinks      Json?           // [{ name, url }]
+orgDescription String?
+```
+
+### Structure of Each Role Object
+Each entry in the `openRoles` array is an object with the following fields:
+- `title` (string): The job title (e.g., "Frontend Engineer")
+- `description` (string): Short description of the role
+- `requirements` (string[]): List of requirements
+- `benefits` (string[]): List of benefits (optional)
+- `type` (string): e.g., "Full-time", "Contract" (optional)
+- `url` (string): Link to apply or more info (optional)
+- `location` (string): e.g., "Remote", "San Francisco, CA" (optional)
+- `salary` (string): e.g., "$120k - $140k", "$100/hr" (optional)
+
+### How It Works: Frontend & Backend Flow
+
+**Frontend:**
+- The company user sees an "Open Roles" section in their profile edit page.
+- They can add, edit, and remove multiple roles. Each role is a form with fields for all the above properties.
+- The roles are stored in React state as an array of objects.
+- On save, the array is serialized as JSON and sent to the backend as the `openRoles` field.
+
+**Backend:**
+- The backend receives the `openRoles` field as a JSON string.
+- It parses the string and stores it in the `openRoles` field (type `Json?`) in the User table.
+- The backend should validate the structure before saving.
+
+**Database:**
+- The `openRoles` field stores the array of job objects as JSON, allowing flexible, schema-less storage of job board data for each company user.
+
+**Example:**
+```json
+[
+  {
+    "title": "Frontend Engineer",
+    "description": "React/TypeScript",
+    "requirements": ["3+ years experience"],
+    "benefits": ["Remote work", "Health insurance"],
+    "type": "Full-time",
+    "url": "https://acme.com/jobs/frontend",
+    "location": "Remote",
+    "salary": "$120k - $140k"
+  },
+  {
+    "title": "Backend Engineer",
+    "description": "Node/Prisma",
+    "requirements": ["5+ years experience"],
+    "benefits": ["Stock options", "Flexible hours"],
+    "type": "Contract",
+    "url": "https://acme.com/jobs/backend",
+    "location": "San Francisco, CA",
+    "salary": "$100/hr"
+  }
+]
+```
+
+**Summary:**
+- Companies can manage a flexible list of open roles directly from their profile.
+- The frontend provides a dynamic form for adding/removing roles.
+- The backend and database store the array as JSON, making it easy to query and update.
+
+</rewritten_file>

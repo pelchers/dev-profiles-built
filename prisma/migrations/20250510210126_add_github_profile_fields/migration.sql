@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "githubAvatarUrl" TEXT,
+ADD COLUMN     "githubBio" TEXT,
+ADD COLUMN     "githubBlog" TEXT,
+ADD COLUMN     "githubCompany" TEXT,
+ADD COLUMN     "githubCreatedAt" TIMESTAMP(3),
+ADD COLUMN     "githubFollowers" INTEGER,
+ADD COLUMN     "githubFollowing" INTEGER,
+ADD COLUMN     "githubHtmlUrl" TEXT,
+ADD COLUMN     "githubId" INTEGER,
+ADD COLUMN     "githubProfile" JSONB,
+ADD COLUMN     "githubPublicGists" INTEGER,
+ADD COLUMN     "githubPublicRepos" INTEGER,
+ADD COLUMN     "githubTwitter" TEXT,
+ADD COLUMN     "githubUpdatedAt" TIMESTAMP(3);

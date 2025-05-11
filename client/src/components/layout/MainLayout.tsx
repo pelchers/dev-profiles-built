@@ -18,7 +18,7 @@ const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="min-h-screen relative overflow-hidden overflow-y-hidden">
+    <div className="min-h-screen relative">
       <Navbar />
       <div style={{ height: `${100 / getComputedScale(screenWidth)}vh`, minHeight: '100vh' }}>
         <ScaleWrapper>

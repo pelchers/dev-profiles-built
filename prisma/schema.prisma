@@ -50,13 +50,27 @@ model User {
   accolades      Json?           // [{ title, issuer, date }]
   roles          String[]        // e.g. ["Lead", "Contributor"]
   githubStats    Json?           // Cached GitHub stats
+  githubProfile  Json?           // Full GitHub user object from API
+  githubId        Int?
+  githubAvatarUrl String?
+  githubHtmlUrl   String?
+  githubBio       String?
+  githubCompany   String?
+  githubBlog      String?
+  githubTwitter   String?
+  githubFollowers Int?
+  githubFollowing Int?
+  githubPublicRepos Int?
+  githubPublicGists Int?
+  githubCreatedAt DateTime?
+  githubUpdatedAt DateTime?
 
   // Company-only fields
   companyName    String?
   companySize    String?         // e.g. "1-10", "11-50", "51-200"
   industry       String?
   hiring         Boolean?
-  openRoles      Json?           // [{ title, description, requirements }]
+  openRoles      Json?           // [{ title, description, requirements, benefits, type, url, location, salary }]
   foundingYear   Int?
   teamLinks      Json?           // [{ name, url }]
   orgDescription String?
