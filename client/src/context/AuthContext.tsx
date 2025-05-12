@@ -2,13 +2,28 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { User, UserUpdateInput } from '../types/user';
 import { fetchProfile, updateProfile, syncGitHubProfile } from '../api/profile';
 
+// API base URL configuration
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/api'
+  : 'http://localhost:3000/api';
+
+interface RegisterInput {
+  email: string;
+  username: string;
+  password: string;
+  displayName: string;
+  userType: string;
+  githubUrl?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  login: (token: string, userData: User) => void;
+  register: (data: RegisterInput) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUserProfile: (profileData: UserUpdateInput) => Promise<User>;
   syncGithubProfile: (username: string) => Promise<User>;
@@ -21,7 +36,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: false,
   error: null,
   isAuthenticated: false,
-  login: () => {},
+  register: async () => { throw new Error('Not implemented'); },
+  login: async () => { throw new Error('Not implemented'); },
   logout: () => {},
   updateUserProfile: async () => { throw new Error('Not implemented'); },
   syncGithubProfile: async () => { throw new Error('Not implemented'); },
@@ -70,13 +86,67 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
+  // Register - create new account
+  const register = async (data: RegisterInput) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Registration failed');
+      }
+
+      // Store token and user data
+      localStorage.setItem('token', result.token);
+      setToken(result.token);
+      setUser(result.user);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to register');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Login - store token and user data
-  const login = (newToken: string, userData: User) => {
-    console.log('Logging in with user data:', userData);
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
-    setUser(userData);
-    setError(null);
+  const login = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store both access token and refresh token
+      localStorage.setItem('token', data.accessToken);
+      setToken(data.accessToken);
+      setUser(data.user);
+      setError(null);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Failed to login');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Logout - clear token and user data
@@ -136,6 +206,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     error,
     isAuthenticated,
+    register,
     login,
     logout,
     updateUserProfile,

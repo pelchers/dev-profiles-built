@@ -136,19 +136,21 @@ const Navbar = () => {
                       </div>
                     )}
                     <DropdownItem to="/profile" onClick={() => setProfileOpen(false)}>
-                      Profile
-                    </DropdownItem>
-                    <DropdownItem to="/profile" onClick={() => setProfileOpen(false)}>
-                      Edit Profile
+                      View Profile
                     </DropdownItem>
                     <DropdownItem onClick={handleLogout}>
                       Logout
                     </DropdownItem>
                   </>
                 ) : (
-                  <DropdownItem to="/login" onClick={() => setProfileOpen(false)}>
-                    Login
-                  </DropdownItem>
+                  <>
+                    <DropdownItem to="/login" onClick={() => setProfileOpen(false)}>
+                      Login
+                    </DropdownItem>
+                    <DropdownItem to="/signup" onClick={() => setProfileOpen(false)}>
+                      Sign Up
+                    </DropdownItem>
+                  </>
                 )}
               </div>
             </Dropdown>

@@ -18,7 +18,7 @@ model User {
   userType       UserType  // 'DEVELOPER' or 'COMPANY' or 'DESIGNER"
   username       String    @unique
   email          String    @unique
-  password       String
+  password       String    // Hashed password using bcrypt
   displayName    String?
   profileImage   String?
   bio            String?
@@ -88,10 +88,17 @@ model User {
 
   // Auth & Security
   emailVerified     Boolean   @default(false)
-  verificationToken String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
+  verificationToken String?   // For email verification
+  resetToken        String?   // For password reset
+  resetTokenExpiry  DateTime? // Password reset token expiry
+  lastLogin         DateTime? // Track last login time
+  failedLoginAttempts Int     @default(0) // Track failed login attempts
+  accountLocked      Boolean  @default(false) // Lock account after too many failed attempts
+  lockUntil         DateTime? // When locked account becomes unlocked
   role              Role      @default(USER)
+  refreshToken      String?   // For JWT refresh token
+  refreshTokenExpiry DateTime? // Refresh token expiry
+  sessions          Json?     // Store active sessions info
 
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt

@@ -9,6 +9,7 @@ import Boilerplates from './pages/Boilerplates';
 import Contact from './pages/Contact';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -35,6 +36,7 @@ const App = () => (
         <Route path="/boilerplates" element={<Boilerplates />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route 
           path="/profile" 
           element={
