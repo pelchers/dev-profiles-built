@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, UserType, DevFocus } from '../types/user';
 import { RoleModal } from '../components/flows/profiles/RoleModal';
+import { profileApi } from '../api/profile';
 
 interface ProfileFieldConfig {
   key: string;
@@ -155,21 +156,27 @@ function PillTags({
   value = [],
   editable,
   onChange,
+  label,
 }: {
   value?: string[];
   editable: boolean;
   onChange?: (tags: string[]) => void;
+  label: string;
 }) {
   const [input, setInput] = useState('');
+  const inputId = React.useId();
+
   const handleAdd = () => {
     if (input.trim() && !value.includes(input.trim())) {
       onChange?.([...value, input.trim()]);
       setInput('');
     }
   };
+
   const handleRemove = (tag: string) => {
     onChange?.(value.filter(t => t !== tag));
   };
+
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-2">
@@ -181,6 +188,7 @@ function PillTags({
                 type="button"
                 className="ml-2 text-blue-500 hover:text-red-500"
                 onClick={() => handleRemove(tag)}
+                aria-label={`Remove ${tag}`}
               >
                 ×
               </button>
@@ -190,15 +198,23 @@ function PillTags({
       </div>
       {editable && (
         <div className="flex gap-2">
+          <label htmlFor={inputId} className="sr-only">{label}</label>
           <input
+            id={inputId}
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
             className="border px-2 py-1 rounded"
-            placeholder="Add tag"
+            placeholder={`Add ${label.toLowerCase()}`}
+            aria-label={`Add ${label.toLowerCase()}`}
           />
-          <button type="button" onClick={handleAdd} className="bg-blue-500 text-white px-3 py-1 rounded">
+          <button 
+            type="button" 
+            onClick={handleAdd} 
+            className="bg-blue-500 text-white px-3 py-1 rounded"
+            aria-label={`Add ${label.toLowerCase()}`}
+          >
             Add
           </button>
         </div>
@@ -208,16 +224,29 @@ function PillTags({
 }
 
 // TeamLinksInput component for editing teamLinks as pills
-function TeamLinksInput({ value = [], onChange }: { value?: { name: string; url: string }[]; onChange: (links: { name: string; url: string }[]) => void }) {
+function TeamLinksInput({ 
+  value = [], 
+  onChange,
+  label = 'Team Link'
+}: { 
+  value?: { name: string; url: string }[]; 
+  onChange: (links: { name: string; url: string }[]) => void;
+  label?: string;
+}) {
   const [input, setInput] = useState({ name: '', url: '' });
+  const nameInputId = React.useId();
+  const urlInputId = React.useId();
+
   const handleAdd = () => {
     if (!input.name.trim() && !input.url.trim()) return;
     onChange([...(value || []), { name: input.name.trim(), url: input.url.trim() }]);
     setInput({ name: '', url: '' });
   };
+
   const handleRemove = (idx: number) => {
     onChange(value.filter((_, i) => i !== idx));
   };
+
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-2">
@@ -228,6 +257,7 @@ function TeamLinksInput({ value = [], onChange }: { value?: { name: string; url:
               type="button"
               className="ml-1 text-green-500 hover:text-red-500"
               onClick={() => handleRemove(idx)}
+              aria-label={`Remove ${link.name || 'team link'}`}
             >
               ×
             </button>
@@ -235,21 +265,37 @@ function TeamLinksInput({ value = [], onChange }: { value?: { name: string; url:
         ))}
       </div>
       <div className="flex gap-2">
-        <input
-          type="text"
-          value={input.name}
-          onChange={e => setInput({ ...input, name: e.target.value })}
-          className="border px-2 py-1 rounded"
-          placeholder="Name (optional)"
-        />
-        <input
-          type="url"
-          value={input.url}
-          onChange={e => setInput({ ...input, url: e.target.value })}
-          className="border px-2 py-1 rounded"
-          placeholder="URL"
-        />
-        <button type="button" onClick={handleAdd} className="bg-green-500 text-white px-3 py-1 rounded">
+        <div>
+          <label htmlFor={nameInputId} className="sr-only">{label} Name</label>
+          <input
+            id={nameInputId}
+            type="text"
+            value={input.name}
+            onChange={e => setInput({ ...input, name: e.target.value })}
+            className="border px-2 py-1 rounded"
+            placeholder={`${label} Name (optional)`}
+            aria-label={`${label} Name`}
+          />
+        </div>
+        <div>
+          <label htmlFor={urlInputId} className="sr-only">{label} URL</label>
+          <input
+            id={urlInputId}
+            type="url"
+            value={input.url}
+            onChange={e => setInput({ ...input, url: e.target.value })}
+            className="border px-2 py-1 rounded"
+            placeholder={`${label} URL`}
+            aria-label={`${label} URL`}
+            required
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="bg-green-500 text-white px-3 py-1 rounded"
+          aria-label={`Add ${label.toLowerCase()}`}
+        >
           Add
         </button>
       </div>
@@ -512,7 +558,7 @@ function ProfileField({
     return (
       <div className="mb-4">
         <label className="block font-medium mb-1">{field.label}</label>
-        <PillTags value={value || []} editable={editable} onChange={onChange} />
+        <PillTags value={value || []} editable={editable} onChange={onChange} label={field.label} />
       </div>
     );
   }
@@ -609,193 +655,206 @@ function ExperienceEditor({
   experiences: any[] | undefined; 
   onChange: (experiences: any[]) => void 
 }) {
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const emptyExperience = {
-    title: '',
+  const [editing, setEditing] = useState<number | null>(null);
+  const [draft, setDraft] = useState({
     company: '',
-    location: '',
-    startDate: '',
-    endDate: '',
-    current: false,
+    title: '',
+    start: '',
+    end: '',
     description: ''
-  };
-  const [draft, setDraft] = useState(emptyExperience);
-  
+  });
+
+  const companyInputId = React.useId();
+  const titleInputId = React.useId();
+  const startInputId = React.useId();
+  const endInputId = React.useId();
+  const descInputId = React.useId();
+
   const handleAdd = () => {
-    setEditIndex(null);
-    setDraft(emptyExperience);
+    setEditing(null);
+    setDraft({
+      company: '',
+      title: '',
+      start: '',
+      end: '',
+      description: ''
+    });
   };
-  
+
   const handleEdit = (idx: number) => {
-    setEditIndex(idx);
+    setEditing(idx);
     setDraft(experiences[idx]);
   };
-  
+
   const handleDelete = (idx: number) => {
-    const updated = [...experiences];
-    updated.splice(idx, 1);
-    onChange(updated);
-    if (editIndex === idx) {
-      setEditIndex(null);
-      setDraft(emptyExperience);
+    onChange(experiences.filter((_, i) => i !== idx));
+    if (editing === idx) {
+      setEditing(null);
+      setDraft({
+        company: '',
+        title: '',
+        start: '',
+        end: '',
+        description: ''
+      });
     }
   };
-  
+
   const handleSave = () => {
-    let updated;
-    if (editIndex !== null) {
-      updated = [...experiences];
-      updated[editIndex] = draft;
+    if (editing !== null) {
+      onChange(experiences.map((exp, i) => i === editing ? draft : exp));
     } else {
-      updated = [...experiences, draft];
+      onChange([...experiences, draft]);
     }
-    onChange(updated);
-    setEditIndex(null);
-    setDraft(emptyExperience);
+    setEditing(null);
+    setDraft({
+      company: '',
+      title: '',
+      start: '',
+      end: '',
+      description: ''
+    });
   };
-  
-  const handleChange = (field: string, value: any) => {
-    setDraft({...draft, [field]: value});
+
+  const handleChange = (field: string, value: string) => {
+    setDraft({ ...draft, [field]: value });
   };
-  
+
   return (
-    <div className="space-y-4">
-      {/* List existing experiences */}
-      {experiences.map((exp, idx) => (
-        <div key={idx} className="relative border rounded p-4 bg-gray-50">
-          <div className="absolute top-2 right-2 flex space-x-2">
-            <button 
-              type="button" 
-              onClick={() => handleEdit(idx)}
-              className="text-blue-600 text-xs hover:text-blue-800"
-            >
-              Edit
-            </button>
-            <button 
-              type="button" 
-              onClick={() => handleDelete(idx)}
-              className="text-red-600 text-xs hover:text-red-800"
-            >
-              Delete
-            </button>
+    <div>
+      {/* List of experiences */}
+      <div className="space-y-4 mb-4">
+        {experiences.map((exp, idx) => (
+          <div key={idx} className="bg-gray-50 p-4 rounded relative">
+            <div className="absolute top-2 right-2 flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleEdit(idx)}
+                className="text-blue-500 hover:text-blue-700"
+                aria-label={`Edit ${exp.title} at ${exp.company}`}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(idx)}
+                className="text-red-500 hover:text-red-700"
+                aria-label={`Delete ${exp.title} at ${exp.company}`}
+              >
+                Delete
+              </button>
+            </div>
+            <div className="font-semibold">{exp.title}</div>
+            <div>{exp.company}</div>
+            <div className="text-sm text-gray-600">
+              {exp.start} - {exp.end || 'Present'}
+            </div>
+            <div className="mt-2">{exp.description}</div>
           </div>
-          <div className="font-semibold">{exp.title}</div>
-          <div>{exp.company} {exp.location && `• ${exp.location}`}</div>
-          <div className="text-sm text-gray-600">
-            {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
-          </div>
-          {exp.description && <div className="mt-1 text-sm">{exp.description}</div>}
-        </div>
-      ))}
-      
-      {/* Form for adding/editing */}
-      {editIndex !== null || (
-        <button 
-          type="button"
-          onClick={handleAdd}
-          className="flex items-center text-blue-600 hover:text-blue-800"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Add Experience
-        </button>
-      )}
-      
-      {(editIndex !== null || draft !== emptyExperience) && (
-        <div className="border rounded p-4 bg-white">
-          <h4 className="font-medium mb-3">{editIndex !== null ? 'Edit Experience' : 'Add Experience'}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+        ))}
+      </div>
+
+      {/* Add/Edit form */}
+      {(editing !== null || experiences.length === 0) && (
+        <div className="bg-white p-4 rounded border">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
-              <input 
-                type="text" 
-                value={draft.title} 
-                onChange={(e) => handleChange('title', e.target.value)}
-                className="w-full border rounded p-2 text-sm"
+              <label htmlFor={companyInputId} className="block text-sm font-medium text-gray-700 mb-1">
+                Company
+              </label>
+              <input
+                id={companyInputId}
+                type="text"
+                value={draft.company}
+                onChange={e => handleChange('company', e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                placeholder="Company name"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Company</label>
-              <input 
-                type="text" 
-                value={draft.company} 
-                onChange={(e) => handleChange('company', e.target.value)}
-                className="w-full border rounded p-2 text-sm"
+              <label htmlFor={titleInputId} className="block text-sm font-medium text-gray-700 mb-1">
+                Title
+              </label>
+              <input
+                id={titleInputId}
+                type="text"
+                value={draft.title}
+                onChange={e => handleChange('title', e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                placeholder="Job title"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Location</label>
-              <input 
-                type="text" 
-                value={draft.location} 
-                onChange={(e) => handleChange('location', e.target.value)}
-                className="w-full border rounded p-2 text-sm"
+              <label htmlFor={startInputId} className="block text-sm font-medium text-gray-700 mb-1">
+                Start Date
+              </label>
+              <input
+                id={startInputId}
+                type="date"
+                value={draft.start}
+                onChange={e => handleChange('start', e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Start Date</label>
-              <input 
-                type="text" 
-                placeholder="YYYY-MM" 
-                value={draft.startDate} 
-                onChange={(e) => handleChange('startDate', e.target.value)}
-                className="w-full border rounded p-2 text-sm"
+              <label htmlFor={endInputId} className="block text-sm font-medium text-gray-700 mb-1">
+                End Date
+              </label>
+              <input
+                id={endInputId}
+                type="date"
+                value={draft.end}
+                onChange={e => handleChange('end', e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                placeholder="Leave blank if current"
               />
             </div>
-            <div className="flex items-center mt-2">
-              <input 
-                type="checkbox" 
-                id="current-position" 
-                checked={draft.current} 
-                onChange={(e) => handleChange('current', e.target.checked)}
-                className="mr-2"
+            <div className="col-span-2">
+              <label htmlFor={descInputId} className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                id={descInputId}
+                value={draft.description}
+                onChange={e => handleChange('description', e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                rows={4}
+                placeholder="Describe your role and achievements"
               />
-              <label htmlFor="current-position" className="text-sm">Current Position</label>
             </div>
-            {!draft.current && (
-              <div>
-                <label className="block text-sm font-medium mb-1">End Date</label>
-                <input 
-                  type="text" 
-                  placeholder="YYYY-MM" 
-                  value={draft.endDate} 
-                  onChange={(e) => handleChange('endDate', e.target.value)}
-                  className="w-full border rounded p-2 text-sm"
-                />
-              </div>
-            )}
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea 
-              value={draft.description} 
-              onChange={(e) => handleChange('description', e.target.value)}
-              className="w-full border rounded p-2 text-sm"
-              rows={3}
-            />
-          </div>
-          <div className="flex space-x-3">
-            <button 
-              type="button" 
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-              disabled={!draft.title || !draft.company || !draft.startDate}
-            >
-              Save
-            </button>
-            <button 
-              type="button" 
-              onClick={() => {
-                setEditIndex(null);
-                setDraft(emptyExperience);
-              }}
-              className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100"
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditing(null)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
               Cancel
             </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              disabled={!draft.company || !draft.title || !draft.start}
+            >
+              {editing !== null ? 'Save Changes' : 'Add Experience'}
+            </button>
           </div>
         </div>
+      )}
+
+      {/* Add button */}
+      {editing === null && experiences.length > 0 && (
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="text-blue-500 hover:text-blue-700"
+        >
+          + Add Experience
+        </button>
       )}
     </div>
   );
@@ -819,6 +878,14 @@ function EducationEditor({
     description: ''
   };
   const [draft, setDraft] = useState(emptyEducation);
+  
+  // Generate unique IDs for form controls
+  const schoolInputId = React.useId();
+  const degreeInputId = React.useId();
+  const fieldOfStudyInputId = React.useId();
+  const startDateInputId = React.useId();
+  const endDateInputId = React.useId();
+  const descriptionInputId = React.useId();
   
   const handleAdd = () => {
     setEditIndex(null);
@@ -867,6 +934,7 @@ function EducationEditor({
               type="button" 
               onClick={() => handleEdit(idx)}
               className="text-blue-600 text-xs hover:text-blue-800"
+              aria-label={`Edit ${edu.school}`}
             >
               Edit
             </button>
@@ -874,6 +942,7 @@ function EducationEditor({
               type="button" 
               onClick={() => handleDelete(idx)}
               className="text-red-600 text-xs hover:text-red-800"
+              aria-label={`Delete ${edu.school}`}
             >
               Delete
             </button>
@@ -893,6 +962,7 @@ function EducationEditor({
           type="button"
           onClick={handleAdd}
           className="flex items-center text-blue-600 hover:text-blue-800"
+          aria-label="Add new education"
         >
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -906,60 +976,76 @@ function EducationEditor({
           <h4 className="font-medium mb-3">{editIndex !== null ? 'Edit Education' : 'Add Education'}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
             <div>
-              <label className="block text-sm font-medium mb-1">School</label>
+              <label htmlFor={schoolInputId} className="block text-sm font-medium mb-1">School</label>
               <input 
+                id={schoolInputId}
                 type="text" 
                 value={draft.school} 
                 onChange={(e) => handleChange('school', e.target.value)}
                 className="w-full border rounded p-2 text-sm"
+                placeholder="Enter school name"
+                aria-label="School name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Degree</label>
+              <label htmlFor={degreeInputId} className="block text-sm font-medium mb-1">Degree</label>
               <input 
+                id={degreeInputId}
                 type="text" 
                 value={draft.degree} 
                 onChange={(e) => handleChange('degree', e.target.value)}
                 className="w-full border rounded p-2 text-sm"
+                placeholder="Enter degree"
+                aria-label="Degree"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Field of Study</label>
+              <label htmlFor={fieldOfStudyInputId} className="block text-sm font-medium mb-1">Field of Study</label>
               <input 
+                id={fieldOfStudyInputId}
                 type="text" 
                 value={draft.fieldOfStudy} 
                 onChange={(e) => handleChange('fieldOfStudy', e.target.value)}
                 className="w-full border rounded p-2 text-sm"
+                placeholder="Enter field of study"
+                aria-label="Field of study"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Start Date</label>
+              <label htmlFor={startDateInputId} className="block text-sm font-medium mb-1">Start Date</label>
               <input 
+                id={startDateInputId}
                 type="text" 
                 placeholder="YYYY-MM" 
                 value={draft.startDate} 
                 onChange={(e) => handleChange('startDate', e.target.value)}
                 className="w-full border rounded p-2 text-sm"
+                aria-label="Start date"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End Date (or leave blank if current)</label>
+              <label htmlFor={endDateInputId} className="block text-sm font-medium mb-1">End Date (or leave blank if current)</label>
               <input 
+                id={endDateInputId}
                 type="text" 
                 placeholder="YYYY-MM" 
                 value={draft.endDate} 
                 onChange={(e) => handleChange('endDate', e.target.value)}
                 className="w-full border rounded p-2 text-sm"
+                aria-label="End date"
               />
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label htmlFor={descriptionInputId} className="block text-sm font-medium mb-1">Description</label>
             <textarea 
+              id={descriptionInputId}
               value={draft.description} 
               onChange={(e) => handleChange('description', e.target.value)}
               className="w-full border rounded p-2 text-sm"
               rows={3}
+              placeholder="Enter description of your education"
+              aria-label="Description"
             />
           </div>
           <div className="flex space-x-3">
@@ -968,6 +1054,7 @@ function EducationEditor({
               onClick={handleSave}
               className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
               disabled={!draft.school || !draft.degree || !draft.startDate}
+              aria-label="Save education"
             >
               Save
             </button>
@@ -978,6 +1065,7 @@ function EducationEditor({
                 setDraft(emptyEducation);
               }}
               className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100"
+              aria-label="Cancel editing"
             >
               Cancel
             </button>
@@ -999,7 +1087,7 @@ function TechStackEditor({
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const emptyStack = {
     name: '',
-    technologies: []
+    technologies: [] as string[]
   };
   const [draft, setDraft] = useState(emptyStack);
   const [techInput, setTechInput] = useState('');
@@ -1045,13 +1133,13 @@ function TechStackEditor({
     if (!techInput.trim()) return;
     setDraft({
       ...draft,
-      technologies: [...draft.technologies, techInput.trim()]
+      technologies: [...(draft.technologies || []), techInput.trim()]
     });
     setTechInput('');
   };
   
   const handleRemoveTech = (idx: number) => {
-    const updatedTech = [...draft.technologies];
+    const updatedTech = [...(draft.technologies || [])];
     updatedTech.splice(idx, 1);
     setDraft({...draft, technologies: updatedTech});
   };
@@ -1176,17 +1264,43 @@ function TechStackEditor({
 }
 
 export default function ProfilePage() {
-  const { user: authUser, loading: authLoading, updateUserProfile, syncGithubProfile } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [syncingGitHub, setSyncingGitHub] = useState(false);
+  const { user: authUser, token, updateUser } = useAuth();
+  const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<User | null>(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
+  const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
+
   // Determine if the current user is the profile owner
-  const isOwner = authUser?.id === user?.id;
-  
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const isOwner = authUser?.id === profileData?.id;
+
+  // Fetch profile data on mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // User is already loaded from AuthContext
+        if (authUser) {
+          setProfileData(authUser);
+        } else {
+          // Try fetching again if needed
+          const response = await profileApi.getCurrentProfile();
+          setProfileData(response);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+        console.error('Profile fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [authUser]);
 
   // Clear messages after a timeout
   useEffect(() => {
@@ -1199,85 +1313,100 @@ export default function ProfilePage() {
     }
   }, [error, successMessage]);
 
-  // Use the authenticated user from context instead of mock data
-  useEffect(() => {
-    if (authUser) {
-      console.log('Setting user from authUser:', authUser);
-      console.log('User type:', authUser.userType);
-      setUser(authUser);
-    }
-  }, [authUser]);
-
-  const [editData, setEditData] = useState<User | null>(null);
-  const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
-
-  useEffect(() => {
-    if (isEditing && user) setEditData({ ...user });
-  }, [isEditing, user]);
-
   const handleFieldChange = (key: string, value: any) => {
-    if (!editData) return;
+    if (!profileData) return;
     
-    // Handle special field types
-    if (key === 'devFocus') {
-      // Convert to proper DevFocus enum values
-      setEditData({ ...editData, devFocus: convertDevFocus({ devFocus: value }) });
-      return;
-    }
-    
-    // Special handling for userType changes
-    if (key === 'userType' && editData.userType !== value) {
-      setShowTypeChangeWarning(true);
-    }
-    
-    setEditData({ ...editData, [key]: value });
+    setProfileData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [key]: value
+      };
+    });
   };
 
   const handleSave = async () => {
-    if (!editData) return;
-    
+    if (!profileData) return;
+
     try {
+      setLoading(true);
       setError(null);
-      await updateUserProfile(editData);
+      const updatedProfile = await profileApi.updateProfile(profileData);
+      setProfileData(updatedProfile);
+      updateUser(updatedProfile); // Update auth context
+      setEditMode(false);
       setSuccessMessage('Profile updated successfully');
-      setIsEditing(false);
-    } catch (error: any) {
-      console.error('Failed to update profile:', error);
-      setError(error.message || 'Failed to update profile');
-    }
-  };
-
-  // Add GitHub sync function
-  const handleSyncGitHub = async () => {
-    if (!user?.githubUsername) return;
-    
-    try {
-      setError(null);
-      setSyncingGitHub(true);
-      await syncGithubProfile(user.githubUsername);
-      setSuccessMessage('GitHub profile synced successfully');
-    } catch (error: any) {
-      console.error('Failed to sync GitHub profile:', error);
-      setError(error.message || 'Failed to sync GitHub profile');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      console.error('Profile update error:', err);
     } finally {
-      setSyncingGitHub(false);
+      setLoading(false);
     }
   };
 
-  if (authLoading) return <div className="p-8 text-center">Loading profile...</div>;
-  if (!user) return <div className="p-8 text-center">User not found</div>;
+  const handleSyncGitHub = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedProfile = await profileApi.syncGitHub();
+      setProfileData(updatedProfile);
+      updateUser(updatedProfile); // Update auth context
+      setSuccessMessage('GitHub profile synced successfully');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sync GitHub data');
+      console.error('GitHub sync error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !profileData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error && !profileData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500 text-center">
+          <p className="text-xl font-semibold mb-2">Error</p>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData || !authUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500 text-center">
+          <p>No profile data available</p>
+        </div>
+      </div>
+    );
+  }
 
   // Determine which image to use
-  const profileImageUrl = user.profileImage || user.githubAvatarUrl || '';
+  const profileImageUrl = profileData.profileImage || profileData.githubAvatarUrl || '';
 
-  // Add a GitHub sync button in the appropriate section
-  const syncButton = user?.githubUsername && !isEditing && (
-    <button 
+  // Add GitHub sync button
+  const syncButton = authUser.githubUsername && !editMode && (
+    <button
       onClick={handleSyncGitHub}
-      disabled={syncingGitHub}
+      disabled={loading}
       className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-3 py-1 rounded flex items-center ml-auto"
+      aria-label="Sync GitHub Data"
     >
-      {syncingGitHub ? (
+      {loading ? (
         <>
           <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -1292,169 +1421,209 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-8">
-      {/* Success/Error message display */}
-      {(error || successMessage) && (
-        <div className={`p-4 rounded mb-4 ${error ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-          {error || successMessage}
+    <div className="container mx-auto px-4 py-8">
+      {/* Show success/error messages */}
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+          {successMessage}
         </div>
       )}
-    
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Profile</h1>
-        {isOwner && (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={() => setIsEditing(e => !e)}
-          >
-            {isEditing ? 'Cancel' : 'Edit'}
-          </button>
-        )}
-      </div>
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          handleSave();
-        }}
-        className=""
-      >
-        {/* Basic Info Section with custom layout for image, username, email, userType */}
-        <div className="mb-8 bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Basic Info</h2>
-          <div className="flex flex-col items-center mb-6">
-            {profileImageUrl && (
-              <img
-                src={profileImageUrl}
-                alt={user.displayName || user.username || 'Profile'}
-                className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 mb-3"
-              />
-            )}
-            {user.username && (
-              <div className="text-lg font-semibold text-gray-800">{user.username}</div>
-            )}
-            {user.email && (
-              <div className="text-sm text-gray-500">{user.email}</div>
-            )}
-            {isEditing ? (
-              <div className="mt-3 w-full max-w-xs">
-                <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
-                <select 
-                  value={editData?.userType || UserType.DEVELOPER}
-                  onChange={(e) => handleFieldChange('userType', e.target.value)}
-                  className="block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                  aria-label="Select user type"
-                >
-                  <option value={UserType.DEVELOPER}>Developer</option>
-                  <option value={UserType.COMPANY}>Company</option>
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  Changing user type will show/hide specific sections of your profile
-                </p>
-                {showTypeChangeWarning && (
-                  <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
-                    <p className="font-medium">Warning:</p>
-                    <p>Changing user type will show/hide different profile sections. Some data might not be visible after changing, but it will be preserved if you switch back.</p>
-                    <button 
-                      type="button"
-                      className="mt-1 text-yellow-800 underline"
-                      onClick={() => setShowTypeChangeWarning(false)}
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              user.userType && (
-                <div className="text-xs text-blue-600 font-bold uppercase tracking-wider mt-1">{user.userType}</div>
-              )
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {profileFields.filter(f =>
-              SECTION_DEFS[0].fields.includes(f.key) &&
-              !['profileImage', 'username', 'email', 'userType'].includes(f.key)
-            ).map(field => (
-              <ProfileField
-                key={field.key}
-                field={field}
-                value={isEditing ? editData?.[field.key] : user[field.key]}
-                editable={isEditing && !field.isGithubField && isOwner && !SECTION_DEFS[0].readonly}
-                onChange={val => handleFieldChange(field.key, val)}
-              />
-            ))}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
+      {/* Show type change warning */}
+      {showTypeChangeWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Change User Type?</h3>
+            <p className="mb-4">
+              Changing your user type will affect which fields are available and may result in data loss.
+              Are you sure you want to continue?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                onClick={() => setShowTypeChangeWarning(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => {
+                  setShowTypeChangeWarning(false);
+                  // Continue with type change
+                }}
+              >
+                Continue
+              </button>
+            </div>
           </div>
         </div>
-        {/* Render the rest of the sections */}
-        {SECTION_DEFS.slice(1).map(section => {
-          // When editing, use editData's userType for section visibility
-          const currentUserType = isEditing && editData ? editData.userType : user?.userType;
-          
-          // Debug log to check user type and section visibility
-          console.log('Section:', section.title);
-          console.log('Current user type:', currentUserType);
-          console.log('Section onlyIf condition:', section.onlyIf ? 'exists' : 'none');
-          
-          // Check section visibility conditions
-          const shouldShow = !section.onlyIf || (user && section.onlyIf({ ...user, userType: currentUserType || UserType.DEVELOPER }));
-          console.log('Should show section:', shouldShow);
-          
-          if (!shouldShow) {
-            return null;
-          }
-          
-          // Get fields for this section
-          const sectionFields = section.fields.map(fieldKey => {
-            const field = profileFields.find(f => f.key === fieldKey);
-            if (!field) {
-              // For special fields like experience, education, etc.
-              return {
-                key: fieldKey,
-                label: fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
-                type: 'json',
-                isGithubField: false
-              } as ProfileFieldConfig;
-            }
-            return field;
-          }).filter(Boolean); // Filter out any undefined fields
+      )}
 
-          // Only add sync button to GitHub section
-          const showSyncButton = section.title === 'Social & Links' && user?.githubUsername && !isEditing;
-          
-          return (
-            <div key={section.title} className="mb-8 bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">{section.title}</h2>
-                {showSyncButton && syncButton}
-              </div>
-              <div className={`grid grid-cols-1 ${section.span === 'full' ? '' : 'md:grid-cols-2'} gap-6`}>
-                {sectionFields.map(field => {
-                  // Debug log for field values
-                  console.log('Field:', field.key, 'Value:', isEditing ? editData?.[field.key] : user?.[field.key]);
-                  
-                  return (
-                    <ProfileField
-                      key={field.key}
-                      field={field}
-                      value={isEditing ? editData?.[field.key] : user?.[field.key]}
-                      editable={isEditing && !field.isGithubField && isOwner && !section.readonly}
-                      onChange={val => handleFieldChange(field.key, val)}
-                    />
-                  );
-                })}
-              </div>
+      {/* Rest of the existing JSX */}
+      <div className="max-w-3xl mx-auto p-6 space-y-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Profile</h1>
+          {isOwner && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={() => setEditMode(e => !e)}
+            >
+              {editMode ? 'Cancel' : 'Edit'}
+            </button>
+          )}
+        </div>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            handleSave();
+          }}
+          className=""
+        >
+          {/* Basic Info Section with custom layout for image, username, email, userType */}
+          <div className="mb-8 bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Basic Info</h2>
+            <div className="flex flex-col items-center mb-6">
+              {profileImageUrl && (
+                <img
+                  src={profileImageUrl}
+                  alt={authUser?.displayName || authUser?.username || 'Profile'}
+                  className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 mb-3"
+                />
+              )}
+              {authUser?.username && (
+                <div className="text-lg font-semibold text-gray-800">{authUser.username}</div>
+              )}
+              {authUser?.email && (
+                <div className="text-sm text-gray-500">{authUser.email}</div>
+              )}
+              {editMode ? (
+                <div className="mt-3 w-full max-w-xs">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
+                  <select 
+                    value={profileData?.userType || UserType.DEVELOPER}
+                    onChange={(e) => handleFieldChange('userType', e.target.value)}
+                    className="block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                    aria-label="Select user type"
+                  >
+                    <option value={UserType.DEVELOPER}>Developer</option>
+                    <option value={UserType.COMPANY}>Company</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Changing user type will show/hide specific sections of your profile
+                  </p>
+                  {showTypeChangeWarning && (
+                    <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
+                      <p className="font-medium">Warning:</p>
+                      <p>Changing user type will show/hide different profile sections. Some data might not be visible after changing, but it will be preserved if you switch back.</p>
+                      <button 
+                        type="button"
+                        className="mt-1 text-yellow-800 underline"
+                        onClick={() => setShowTypeChangeWarning(false)}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                authUser.userType && (
+                  <div className="text-xs text-blue-600 font-bold uppercase tracking-wider mt-1">{authUser.userType}</div>
+                )
+              )}
             </div>
-          );
-        })}
-        {isEditing && (
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-6 py-2 rounded font-semibold mt-4"
-          >
-            Save Changes
-          </button>
-        )}
-      </form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {profileFields.filter(f =>
+                SECTION_DEFS[0].fields.includes(f.key) &&
+                !['profileImage', 'username', 'email', 'userType'].includes(f.key)
+              ).map(field => (
+                <ProfileField
+                  key={field.key}
+                  field={field}
+                  value={editMode ? profileData?.[field.key] : authUser[field.key]}
+                  editable={editMode && !field.isGithubField && isOwner && !SECTION_DEFS[0].readonly}
+                  onChange={val => handleFieldChange(field.key, val)}
+                />
+              ))}
+            </div>
+          </div>
+          {/* Render the rest of the sections */}
+          {SECTION_DEFS.slice(1).map(section => {
+            // When editing, use editData's userType for section visibility
+            const currentUserType = editMode && profileData ? profileData.userType : authUser?.userType;
+            
+            // Debug log to check user type and section visibility
+            console.log('Section:', section.title);
+            console.log('Current user type:', currentUserType);
+            console.log('Section onlyIf condition:', section.onlyIf ? 'exists' : 'none');
+            
+            // Check section visibility conditions
+            const shouldShow = !section.onlyIf || (authUser && section.onlyIf({ ...authUser, userType: currentUserType || UserType.DEVELOPER }));
+            console.log('Should show section:', shouldShow);
+            
+            if (!shouldShow) {
+              return null;
+            }
+            
+            // Get fields for this section
+            const sectionFields = section.fields.map(fieldKey => {
+              const field = profileFields.find(f => f.key === fieldKey);
+              if (!field) {
+                // For special fields like experience, education, etc.
+                return {
+                  key: fieldKey,
+                  label: fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
+                  type: 'json',
+                  isGithubField: false
+                } as ProfileFieldConfig;
+              }
+              return field;
+            }).filter(Boolean); // Filter out any undefined fields
+
+            // Only add sync button to GitHub section
+            const showSyncButton = section.title === 'Social & Links' && authUser?.githubUsername && !editMode;
+            
+            return (
+              <div key={section.title} className="mb-8 bg-white rounded-lg shadow p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">{section.title}</h2>
+                  {showSyncButton && syncButton}
+                </div>
+                <div className={`grid grid-cols-1 ${section.span === 'full' ? '' : 'md:grid-cols-2'} gap-6`}>
+                  {sectionFields.map(field => {
+                    // Debug log for field values
+                    console.log('Field:', field.key, 'Value:', editMode ? profileData?.[field.key] : authUser?.[field.key]);
+                    
+                    return (
+                      <ProfileField
+                        key={field.key}
+                        field={field}
+                        value={editMode ? profileData?.[field.key] : authUser?.[field.key]}
+                        editable={editMode && !field.isGithubField && isOwner && !section.readonly}
+                        onChange={val => handleFieldChange(field.key, val)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+          {editMode && (
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2 rounded font-semibold mt-4"
+            >
+              Save Changes
+            </button>
+          )}
+        </form>
+      </div>
     </div>
   );
 }
+
+

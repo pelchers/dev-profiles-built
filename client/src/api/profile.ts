@@ -5,16 +5,108 @@ import { User, UserUpdateInput } from '../types/user';
  */
 
 // Use the local API or proxy path
-const API_BASE_URL = '';  // Empty means use the same origin or proxy defined in vite.config.ts
+const API_BASE_URL = '/api';
+
+/**
+ * Get token from localStorage
+ */
+const getAuthToken = () => localStorage.getItem('token');
 
 /**
  * Fetch the current user's profile (requires authentication)
  * 
- * @param token JWT authentication token
  * @returns The user profile data
  */
+export const profileApi = {
+  // Get current user's profile
+  getCurrentProfile: async (): Promise<User> => {
+    const token = getAuthToken();
+    
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/profile/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to fetch profile');
+    }
+    
+    return response.json();
+  },
+
+  // Get profile by username
+  getProfileByUsername: async (username: string): Promise<User> => {
+    const response = await fetch(`${API_BASE_URL}/profile/${username}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile');
+    }
+    
+    return response.json();
+  },
+
+  // Update current user's profile
+  updateProfile: async (profileData: Partial<User>): Promise<User> => {
+    const token = getAuthToken();
+    
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/profile/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to update profile');
+    }
+    
+    return response.json();
+  },
+
+  // Sync GitHub data
+  syncGitHub: async (): Promise<User> => {
+    const token = getAuthToken();
+    
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/profile/github/sync`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to sync GitHub data');
+    }
+    
+    return response.json();
+  },
+};
+
+// Backward compatibility for existing code
 export const fetchProfile = async (token: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+  const response = await fetch(`${API_BASE_URL}/profile/me`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -30,37 +122,12 @@ export const fetchProfile = async (token: string): Promise<User> => {
   return response.json();
 };
 
-/**
- * Fetch a user's profile by username (public endpoint, no auth required)
- * 
- * @param username The username to fetch
- * @returns The public user profile data
- */
 export const fetchProfileByUsername = async (username: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/username/${username}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Profile not found: ${response.status}`);
-  }
-
-  return response.json();
+  return profileApi.getProfileByUsername(username);
 };
 
-/**
- * Update the current user's profile (requires authentication)
- * 
- * @param token JWT authentication token
- * @param profileData The profile data to update
- * @returns The updated user profile data
- */
 export const updateProfile = async (token: string, profileData: UserUpdateInput): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+  const response = await fetch(`${API_BASE_URL}/profile/me`, {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -84,7 +151,7 @@ export const updateProfile = async (token: string, profileData: UserUpdateInput)
  * @returns GitHub profile data
  */
 export const fetchGitHubProfile = async (username: string): Promise<any> => {
-  const response = await fetch(`${API_BASE_URL}/api/github/${username}`, {
+  const response = await fetch(`${API_BASE_URL}/github/${username}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -107,12 +174,13 @@ export const fetchGitHubProfile = async (username: string): Promise<any> => {
  * @returns The updated user profile with GitHub data
  */
 export const syncGitHubProfile = async (token: string, username: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/github/sync/${username}`, {
+  const response = await fetch(`${API_BASE_URL}/profile/github/sync`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
-    }
+    },
+    body: JSON.stringify({ username })
   });
 
   if (!response.ok) {
@@ -132,7 +200,7 @@ export const syncGitHubProfile = async (token: string, username: string): Promis
  * @returns The updated user profile with GitHub data
  */
 export const syncGitHubProfileByUrl = async (token: string, githubUrl: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/github/sync`, {
+  const response = await fetch(`${API_BASE_URL}/github/sync`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,

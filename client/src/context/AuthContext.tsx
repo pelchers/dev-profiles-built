@@ -27,6 +27,7 @@ interface AuthContextType {
   logout: () => void;
   updateUserProfile: (profileData: UserUpdateInput) => Promise<User>;
   syncGithubProfile: (username: string) => Promise<User>;
+  updateUser: (user: User) => void;
 }
 
 // Create context with default values
@@ -41,6 +42,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   updateUserProfile: async () => { throw new Error('Not implemented'); },
   syncGithubProfile: async () => { throw new Error('Not implemented'); },
+  updateUser: () => {},
 });
 
 // Custom hook to use the auth context
@@ -199,6 +201,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Compute authentication status
   const isAuthenticated = !!token && !!user;
 
+  // Update user
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   // Provide the context value
   const contextValue: AuthContextType = {
     user,
@@ -211,6 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateUserProfile,
     syncGithubProfile,
+    updateUser,
   };
 
   return (
