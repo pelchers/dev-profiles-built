@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import Button from "./Button";
 import { Dropdown, DropdownItem } from "./Dropdown";
-import ProfilePage from './../../pages/ProfilePage';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -23,6 +25,12 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    setProfileOpen(false);
+    navigate('/');
+  };
 
   return (
     <nav className="sticky top-0 w-full flex items-center justify-between px-4 md:px-8 py-3 bg-white text-black border-b-4 border-arcade-blue shadow-[0_0_8px_#00CFFF] rounded-b-lg z-40">
@@ -63,9 +71,11 @@ const Navbar = () => {
                 <DropdownItem to="/contact" onClick={() => setMenuOpen(false)}>
                   Contact
                 </DropdownItem>
-                <DropdownItem to="/profile" onClick={() => setMenuOpen(false)}>
-                  Profile
-                </DropdownItem>
+                {isAuthenticated && (
+                  <DropdownItem to="/profile" onClick={() => setMenuOpen(false)}>
+                    Profile
+                  </DropdownItem>
+                )}
               </div>
             </Dropdown>
           )}
@@ -100,30 +110,46 @@ const Navbar = () => {
             aria-label="Profile"
             onClick={() => setProfileOpen(!profileOpen)}
           >
-            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" />
-            </svg>
+            {isAuthenticated && user?.profileImage ? (
+              <img 
+                src={user.profileImage} 
+                alt={user.displayName || user.username} 
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" />
+              </svg>
+            )}
           </button>
 
           {profileOpen && (
             <Dropdown align="right">
               <div className="py-2">
-                <DropdownItem to="/profile" onClick={() => setProfileOpen(false)}>
-                  Profile
-                </DropdownItem>
-                <DropdownItem to="/edit-profile" onClick={() => setProfileOpen(false)}>
-                  Edit Profile
-                </DropdownItem>
-                <DropdownItem to="/settings" onClick={() => setProfileOpen(false)}>
-                  Settings
-                </DropdownItem>
-                <DropdownItem to="/login" onClick={() => setProfileOpen(false)}>
-                  Login
-                </DropdownItem>
-                <DropdownItem to="/logout" onClick={() => setProfileOpen(false)}>
-                  Logout
-                </DropdownItem>
+                {isAuthenticated ? (
+                  <>
+                    {user && (
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <div className="font-semibold">{user.displayName || user.username}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    )}
+                    <DropdownItem to="/profile" onClick={() => setProfileOpen(false)}>
+                      Profile
+                    </DropdownItem>
+                    <DropdownItem to="/profile" onClick={() => setProfileOpen(false)}>
+                      Edit Profile
+                    </DropdownItem>
+                    <DropdownItem onClick={handleLogout}>
+                      Logout
+                    </DropdownItem>
+                  </>
+                ) : (
+                  <DropdownItem to="/login" onClick={() => setProfileOpen(false)}>
+                    Login
+                  </DropdownItem>
+                )}
               </div>
             </Dropdown>
           )}
