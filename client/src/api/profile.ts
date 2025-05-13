@@ -88,7 +88,7 @@ export const profileApi = {
       throw new Error('Authentication token not found');
     }
     
-    const response = await fetch(`${API_BASE_URL}/profile/github/sync`, {
+    const response = await fetch(`${API_BASE_URL}/github/sync`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -97,7 +97,8 @@ export const profileApi = {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to sync GitHub data');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to sync GitHub data');
     }
     
     return response.json();
@@ -151,7 +152,7 @@ export const updateProfile = async (token: string, profileData: UserUpdateInput)
  * @returns GitHub profile data
  */
 export const fetchGitHubProfile = async (username: string): Promise<any> => {
-  const response = await fetch(`${API_BASE_URL}/github/${username}`, {
+  const response = await fetch(`${API_BASE_URL}/github/profile/${username}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -174,7 +175,7 @@ export const fetchGitHubProfile = async (username: string): Promise<any> => {
  * @returns The updated user profile with GitHub data
  */
 export const syncGitHubProfile = async (token: string, username: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/profile/github/sync`, {
+  const response = await fetch(`${API_BASE_URL}/github/sync`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,

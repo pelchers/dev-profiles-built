@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { User, UserType, DevFocus } from '../types/user';
 import { RoleModal } from '../components/flows/profiles/RoleModal';
 import { profileApi } from '../api/profile';
+import { GitHubIntegration } from '../components/flows/profiles/GitHubIntegration';
 
 interface ProfileFieldConfig {
   key: string;
@@ -267,28 +268,28 @@ function TeamLinksInput({
       <div className="flex gap-2">
         <div>
           <label htmlFor={nameInputId} className="sr-only">{label} Name</label>
-          <input
+        <input
             id={nameInputId}
-            type="text"
-            value={input.name}
-            onChange={e => setInput({ ...input, name: e.target.value })}
-            className="border px-2 py-1 rounded"
+          type="text"
+          value={input.name}
+          onChange={e => setInput({ ...input, name: e.target.value })}
+          className="border px-2 py-1 rounded"
             placeholder={`${label} Name (optional)`}
             aria-label={`${label} Name`}
-          />
+        />
         </div>
         <div>
           <label htmlFor={urlInputId} className="sr-only">{label} URL</label>
-          <input
+        <input
             id={urlInputId}
-            type="url"
-            value={input.url}
-            onChange={e => setInput({ ...input, url: e.target.value })}
-            className="border px-2 py-1 rounded"
+          type="url"
+          value={input.url}
+          onChange={e => setInput({ ...input, url: e.target.value })}
+          className="border px-2 py-1 rounded"
             placeholder={`${label} URL`}
             aria-label={`${label} URL`}
             required
-          />
+        />
         </div>
         <button
           type="button"
@@ -669,7 +670,7 @@ function ExperienceEditor({
   const startInputId = React.useId();
   const endInputId = React.useId();
   const descInputId = React.useId();
-
+  
   const handleAdd = () => {
     setEditing(null);
     setDraft({
@@ -680,12 +681,12 @@ function ExperienceEditor({
       description: ''
     });
   };
-
+  
   const handleEdit = (idx: number) => {
     setEditing(idx);
     setDraft(experiences[idx]);
   };
-
+  
   const handleDelete = (idx: number) => {
     onChange(experiences.filter((_, i) => i !== idx));
     if (editing === idx) {
@@ -699,7 +700,7 @@ function ExperienceEditor({
       });
     }
   };
-
+  
   const handleSave = () => {
     if (editing !== null) {
       onChange(experiences.map((exp, i) => i === editing ? draft : exp));
@@ -715,45 +716,45 @@ function ExperienceEditor({
       description: ''
     });
   };
-
+  
   const handleChange = (field: string, value: string) => {
     setDraft({ ...draft, [field]: value });
   };
-
+  
   return (
     <div>
       {/* List of experiences */}
       <div className="space-y-4 mb-4">
-        {experiences.map((exp, idx) => (
+      {experiences.map((exp, idx) => (
           <div key={idx} className="bg-gray-50 p-4 rounded relative">
             <div className="absolute top-2 right-2 flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleEdit(idx)}
+            <button 
+              type="button" 
+              onClick={() => handleEdit(idx)}
                 className="text-blue-500 hover:text-blue-700"
                 aria-label={`Edit ${exp.title} at ${exp.company}`}
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(idx)}
+            >
+              Edit
+            </button>
+            <button 
+              type="button" 
+              onClick={() => handleDelete(idx)}
                 className="text-red-500 hover:text-red-700"
                 aria-label={`Delete ${exp.title} at ${exp.company}`}
-              >
-                Delete
-              </button>
-            </div>
-            <div className="font-semibold">{exp.title}</div>
-            <div>{exp.company}</div>
-            <div className="text-sm text-gray-600">
-              {exp.start} - {exp.end || 'Present'}
-            </div>
-            <div className="mt-2">{exp.description}</div>
+            >
+              Delete
+            </button>
           </div>
-        ))}
+          <div className="font-semibold">{exp.title}</div>
+            <div>{exp.company}</div>
+          <div className="text-sm text-gray-600">
+              {exp.start} - {exp.end || 'Present'}
+          </div>
+            <div className="mt-2">{exp.description}</div>
+        </div>
+      ))}
       </div>
-
+      
       {/* Add/Edit form */}
       {(editing !== null || experiences.length === 0) && (
         <div className="bg-white p-4 rounded border">
@@ -762,10 +763,10 @@ function ExperienceEditor({
               <label htmlFor={companyInputId} className="block text-sm font-medium text-gray-700 mb-1">
                 Company
               </label>
-              <input
+              <input 
                 id={companyInputId}
-                type="text"
-                value={draft.company}
+                type="text" 
+                value={draft.company} 
                 onChange={e => handleChange('company', e.target.value)}
                 className="border rounded px-3 py-2 w-full"
                 placeholder="Company name"
@@ -776,9 +777,9 @@ function ExperienceEditor({
               <label htmlFor={titleInputId} className="block text-sm font-medium text-gray-700 mb-1">
                 Title
               </label>
-              <input
+              <input 
                 id={titleInputId}
-                type="text"
+                type="text" 
                 value={draft.title}
                 onChange={e => handleChange('title', e.target.value)}
                 className="border rounded px-3 py-2 w-full"
@@ -790,7 +791,7 @@ function ExperienceEditor({
               <label htmlFor={startInputId} className="block text-sm font-medium text-gray-700 mb-1">
                 Start Date
               </label>
-              <input
+              <input 
                 id={startInputId}
                 type="date"
                 value={draft.start}
@@ -799,43 +800,43 @@ function ExperienceEditor({
                 required
               />
             </div>
-            <div>
+              <div>
               <label htmlFor={endInputId} className="block text-sm font-medium text-gray-700 mb-1">
                 End Date
               </label>
-              <input
+                <input 
                 id={endInputId}
                 type="date"
                 value={draft.end}
                 onChange={e => handleChange('end', e.target.value)}
                 className="border rounded px-3 py-2 w-full"
                 placeholder="Leave blank if current"
-              />
-            </div>
+                />
+              </div>
             <div className="col-span-2">
               <label htmlFor={descInputId} className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
-              <textarea
+            <textarea 
                 id={descInputId}
-                value={draft.description}
+              value={draft.description} 
                 onChange={e => handleChange('description', e.target.value)}
                 className="border rounded px-3 py-2 w-full"
                 rows={4}
                 placeholder="Describe your role and achievements"
-              />
-            </div>
+            />
+          </div>
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
+            <button 
+              type="button" 
               onClick={() => setEditing(null)}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
               Cancel
             </button>
-            <button
-              type="button"
+            <button 
+              type="button" 
               onClick={handleSave}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               disabled={!draft.company || !draft.title || !draft.start}
@@ -1272,7 +1273,8 @@ export default function ProfilePage() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
-
+  const [isGitHubSyncing, setIsGitHubSyncing] = useState(false);
+  
   // Determine if the current user is the profile owner
   const isOwner = authUser?.id === profileData?.id;
 
@@ -1327,7 +1329,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!profileData) return;
-
+    
     try {
       setLoading(true);
       setError(null);
@@ -1346,7 +1348,7 @@ export default function ProfilePage() {
 
   const handleSyncGitHub = async () => {
     try {
-      setLoading(true);
+      setIsGitHubSyncing(true);
       setError(null);
       const updatedProfile = await profileApi.syncGitHub();
       setProfileData(updatedProfile);
@@ -1356,8 +1358,14 @@ export default function ProfilePage() {
       setError(err instanceof Error ? err.message : 'Failed to sync GitHub data');
       console.error('GitHub sync error:', err);
     } finally {
-      setLoading(false);
+      setIsGitHubSyncing(false);
     }
+  };
+
+  const handleGitHubSyncComplete = (updatedUser: User) => {
+    setProfileData(updatedUser);
+    updateUser(updatedUser);
+    setSuccessMessage('GitHub profile synced successfully');
   };
 
   if (loading && !profileData) {
@@ -1398,15 +1406,25 @@ export default function ProfilePage() {
   // Determine which image to use
   const profileImageUrl = profileData.profileImage || profileData.githubAvatarUrl || '';
 
-  // Add GitHub sync button
-  const syncButton = authUser.githubUsername && !editMode && (
-    <button
+  // Create GitHub section
+  const renderGitHubSection = () => {
+    if (!profileData) return null;
+    
+    // Get GitHub fields
+    const githubFields = profileFields.filter(field => field.isGithubField);
+    
+    return (
+      <div className="mb-8 bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">GitHub Profile</h2>
+          {!editMode && isOwner && profileData.githubUsername && (
+    <button 
       onClick={handleSyncGitHub}
-      disabled={loading}
-      className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-3 py-1 rounded flex items-center ml-auto"
-      aria-label="Sync GitHub Data"
+              disabled={isGitHubSyncing}
+              className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-3 py-1 rounded flex items-center"
+              aria-label="Sync GitHub Data"
     >
-      {loading ? (
+              {isGitHubSyncing ? (
         <>
           <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -1418,7 +1436,162 @@ export default function ProfilePage() {
         <>Sync GitHub Data</>
       )}
     </button>
-  );
+          )}
+        </div>
+        
+        {profileData.githubUsername && profileData.githubId ? (
+          <>
+            {/* GitHub Connected UI */}
+            {profileData.githubAvatarUrl && (
+              <div className="flex items-center mb-4">
+                <img
+                  src={profileData.githubAvatarUrl}
+                  alt={`${profileData.githubUsername}'s GitHub avatar`}
+                  className="w-16 h-16 rounded-full mr-4"
+                />
+                <div>
+                  <a
+                    href={profileData.githubHtmlUrl || `https://github.com/${profileData.githubUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline font-medium text-lg"
+                  >
+                    {profileData.githubUsername}
+                  </a>
+                  {profileData.githubBio && (
+                    <p className="text-sm text-gray-600 mt-1">{profileData.githubBio}</p>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* GitHub Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-50 p-3 rounded text-center">
+                <span className="block text-lg font-semibold">{profileData.githubPublicRepos || 0}</span>
+                <span className="text-xs text-gray-600">Repositories</span>
+              </div>
+              <div className="bg-gray-50 p-3 rounded text-center">
+                <span className="block text-lg font-semibold">{profileData.githubFollowers || 0}</span>
+                <span className="text-xs text-gray-600">Followers</span>
+              </div>
+              <div className="bg-gray-50 p-3 rounded text-center">
+                <span className="block text-lg font-semibold">{profileData.githubFollowing || 0}</span>
+                <span className="text-xs text-gray-600">Following</span>
+              </div>
+              <div className="bg-gray-50 p-3 rounded text-center">
+                <span className="block text-lg font-semibold">{profileData.githubPublicGists || 0}</span>
+                <span className="text-xs text-gray-600">Gists</span>
+              </div>
+            </div>
+            
+            {/* GitHub Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {profileData.githubCompany && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                  <div className="p-2 bg-gray-50 rounded">{profileData.githubCompany}</div>
+                </div>
+              )}
+              
+              {profileData.githubBlog && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Blog</label>
+                  <a 
+                    href={profileData.githubBlog.startsWith('http') ? profileData.githubBlog : `https://${profileData.githubBlog}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 block bg-gray-50 rounded text-blue-600 hover:underline"
+                  >
+                    {profileData.githubBlog}
+                  </a>
+                </div>
+              )}
+              
+              {profileData.location && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <div className="p-2 bg-gray-50 rounded">{profileData.location}</div>
+                </div>
+              )}
+              
+              {profileData.githubTwitter && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+                  <a 
+                    href={`https://twitter.com/${profileData.githubTwitter}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 block bg-gray-50 rounded text-blue-600 hover:underline"
+                  >
+                    @{profileData.githubTwitter}
+                  </a>
+                </div>
+              )}
+              
+              {profileData.githubCreatedAt && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Joined GitHub</label>
+                  <div className="p-2 bg-gray-50 rounded">
+                    {new Date(profileData.githubCreatedAt).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+              
+              {profileData.githubUpdatedAt && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
+                  <div className="p-2 bg-gray-50 rounded">
+                    {new Date(profileData.githubUpdatedAt).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* GitHub Not Connected UI */}
+            <div className="bg-gray-50 p-4 rounded mb-4 text-center">
+              {profileData.githubUrl || profileData.githubUsername ? (
+                <p className="text-gray-600">
+                  Your GitHub profile information is not synced yet. Click "Sync GitHub Data" to connect.
+                </p>
+              ) : (
+                <p className="text-gray-600">
+                  Connect your GitHub profile to display your repositories and activity.
+                  {editMode && " Add your GitHub URL or username in the Social & Links section."}
+                </p>
+              )}
+            </div>
+            
+            {editMode && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">GitHub URL or Username</label>
+                <input
+                  type="text"
+                  className="border rounded w-full p-2"
+                  value={profileData.githubUrl || ''}
+                  onChange={e => handleFieldChange('githubUrl', e.target.value)}
+                  placeholder="https://github.com/yourusername"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We'll extract your username from the URL or you can directly enter your GitHub username
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  if (loading && !profileData) {
+  return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -1433,7 +1606,7 @@ export default function ProfilePage() {
           {error}
         </div>
       )}
-
+    
       {/* Show type change warning */}
       {showTypeChangeWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1466,161 +1639,174 @@ export default function ProfilePage() {
 
       {/* Rest of the existing JSX */}
       <div className="max-w-3xl mx-auto p-6 space-y-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Profile</h1>
-          {isOwner && (
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Profile</h1>
+        {isOwner && (
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded"
               onClick={() => setEditMode(e => !e)}
-            >
+          >
               {editMode ? 'Cancel' : 'Edit'}
-            </button>
-          )}
-        </div>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            handleSave();
-          }}
-          className=""
-        >
-          {/* Basic Info Section with custom layout for image, username, email, userType */}
-          <div className="mb-8 bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Basic Info</h2>
-            <div className="flex flex-col items-center mb-6">
-              {profileImageUrl && (
-                <img
-                  src={profileImageUrl}
+          </button>
+        )}
+      </div>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          handleSave();
+        }}
+        className=""
+      >
+        {/* Basic Info Section with custom layout for image, username, email, userType */}
+        <div className="mb-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4">Basic Info</h2>
+          <div className="flex flex-col items-center mb-6">
+            {profileImageUrl && (
+              <img
+                src={profileImageUrl}
                   alt={authUser?.displayName || authUser?.username || 'Profile'}
-                  className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 mb-3"
-                />
-              )}
+                className="w-28 h-28 rounded-full object-cover border-4 border-blue-200 mb-3"
+              />
+            )}
               {authUser?.username && (
                 <div className="text-lg font-semibold text-gray-800">{authUser.username}</div>
-              )}
+            )}
               {authUser?.email && (
                 <div className="text-sm text-gray-500">{authUser.email}</div>
-              )}
+            )}
               {editMode ? (
-                <div className="mt-3 w-full max-w-xs">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
-                  <select 
+              <div className="mt-3 w-full max-w-xs">
+                <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
+                <select 
                     value={profileData?.userType || UserType.DEVELOPER}
-                    onChange={(e) => handleFieldChange('userType', e.target.value)}
-                    className="block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                    aria-label="Select user type"
-                  >
-                    <option value={UserType.DEVELOPER}>Developer</option>
-                    <option value={UserType.COMPANY}>Company</option>
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Changing user type will show/hide specific sections of your profile
-                  </p>
-                  {showTypeChangeWarning && (
-                    <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
-                      <p className="font-medium">Warning:</p>
-                      <p>Changing user type will show/hide different profile sections. Some data might not be visible after changing, but it will be preserved if you switch back.</p>
-                      <button 
-                        type="button"
-                        className="mt-1 text-yellow-800 underline"
-                        onClick={() => setShowTypeChangeWarning(false)}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
+                  onChange={(e) => handleFieldChange('userType', e.target.value)}
+                  className="block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                  aria-label="Select user type"
+                >
+                  <option value={UserType.DEVELOPER}>Developer</option>
+                  <option value={UserType.COMPANY}>Company</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Changing user type will show/hide specific sections of your profile
+                </p>
+                {showTypeChangeWarning && (
+                  <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
+                    <p className="font-medium">Warning:</p>
+                    <p>Changing user type will show/hide different profile sections. Some data might not be visible after changing, but it will be preserved if you switch back.</p>
+                    <button 
+                      type="button"
+                      className="mt-1 text-yellow-800 underline"
+                      onClick={() => setShowTypeChangeWarning(false)}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
                 authUser.userType && (
                   <div className="text-xs text-blue-600 font-bold uppercase tracking-wider mt-1">{authUser.userType}</div>
-                )
-              )}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {profileFields.filter(f =>
-                SECTION_DEFS[0].fields.includes(f.key) &&
-                !['profileImage', 'username', 'email', 'userType'].includes(f.key)
-              ).map(field => (
-                <ProfileField
-                  key={field.key}
-                  field={field}
+              )
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {profileFields.filter(f =>
+              SECTION_DEFS[0].fields.includes(f.key) &&
+              !['profileImage', 'username', 'email', 'userType'].includes(f.key)
+            ).map(field => (
+              <ProfileField
+                key={field.key}
+                field={field}
                   value={editMode ? profileData?.[field.key] : authUser[field.key]}
                   editable={editMode && !field.isGithubField && isOwner && !SECTION_DEFS[0].readonly}
-                  onChange={val => handleFieldChange(field.key, val)}
-                />
-              ))}
-            </div>
+                onChange={val => handleFieldChange(field.key, val)}
+              />
+            ))}
           </div>
-          {/* Render the rest of the sections */}
-          {SECTION_DEFS.slice(1).map(section => {
-            // When editing, use editData's userType for section visibility
+        </div>
+          
+        {/* Render the rest of the sections */}
+        {SECTION_DEFS.slice(1).map(section => {
+          // When editing, use editData's userType for section visibility
             const currentUserType = editMode && profileData ? profileData.userType : authUser?.userType;
-            
-            // Debug log to check user type and section visibility
-            console.log('Section:', section.title);
-            console.log('Current user type:', currentUserType);
-            console.log('Section onlyIf condition:', section.onlyIf ? 'exists' : 'none');
-            
-            // Check section visibility conditions
+          
+          // Check section visibility conditions
             const shouldShow = !section.onlyIf || (authUser && section.onlyIf({ ...authUser, userType: currentUserType || UserType.DEVELOPER }));
-            console.log('Should show section:', shouldShow);
-            
-            if (!shouldShow) {
-              return null;
+          
+          if (!shouldShow) {
+            return null;
+          }
+          
+          // Get fields for this section
+          const sectionFields = section.fields.map(fieldKey => {
+            const field = profileFields.find(f => f.key === fieldKey);
+            if (!field) {
+              // For special fields like experience, education, etc.
+              return {
+                key: fieldKey,
+                label: fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
+                type: 'json',
+                isGithubField: false
+              } as ProfileFieldConfig;
             }
-            
-            // Get fields for this section
-            const sectionFields = section.fields.map(fieldKey => {
-              const field = profileFields.find(f => f.key === fieldKey);
-              if (!field) {
-                // For special fields like experience, education, etc.
-                return {
-                  key: fieldKey,
-                  label: fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
-                  type: 'json',
-                  isGithubField: false
-                } as ProfileFieldConfig;
-              }
-              return field;
-            }).filter(Boolean); // Filter out any undefined fields
+            return field;
+          }).filter(Boolean); // Filter out any undefined fields
 
-            // Only add sync button to GitHub section
+          // Only add sync button to GitHub section
             const showSyncButton = section.title === 'Social & Links' && authUser?.githubUsername && !editMode;
-            
-            return (
-              <div key={section.title} className="mb-8 bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">{section.title}</h2>
-                  {showSyncButton && syncButton}
-                </div>
-                <div className={`grid grid-cols-1 ${section.span === 'full' ? '' : 'md:grid-cols-2'} gap-6`}>
-                  {sectionFields.map(field => {
-                    // Debug log for field values
-                    console.log('Field:', field.key, 'Value:', editMode ? profileData?.[field.key] : authUser?.[field.key]);
-                    
-                    return (
-                      <ProfileField
-                        key={field.key}
-                        field={field}
-                        value={editMode ? profileData?.[field.key] : authUser?.[field.key]}
-                        editable={editMode && !field.isGithubField && isOwner && !section.readonly}
-                        onChange={val => handleFieldChange(field.key, val)}
-                      />
-                    );
-                  })}
-                </div>
+          
+          return (
+            <div key={section.title} className="mb-8 bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">{section.title}</h2>
+                  {showSyncButton && (
+                    <button
+                      onClick={handleSyncGitHub}
+                      disabled={isGitHubSyncing}
+                      className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-3 py-1 rounded flex items-center"
+                      aria-label="Sync GitHub Data"
+                    >
+                      {isGitHubSyncing ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Syncing...
+                        </>
+                      ) : (
+                        <>Sync GitHub Data</>
+                      )}
+                    </button>
+                  )}
               </div>
-            );
-          })}
+              <div className={`grid grid-cols-1 ${section.span === 'full' ? '' : 'md:grid-cols-2'} gap-6`}>
+                  {sectionFields.map(field => (
+                    <ProfileField
+                      key={field.key}
+                      field={field}
+                      value={editMode ? profileData?.[field.key] : authUser?.[field.key]}
+                      editable={editMode && !field.isGithubField && isOwner && !section.readonly}
+                      onChange={val => handleFieldChange(field.key, val)}
+                    />
+                  ))}
+              </div>
+            </div>
+          );
+        })}
+          
+          {/* GitHub section */}
+          {renderGitHubSection()}
+          
           {editMode && (
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-6 py-2 rounded font-semibold mt-4"
-            >
-              Save Changes
-            </button>
-          )}
-        </form>
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-6 py-2 rounded font-semibold mt-4"
+          >
+            Save Changes
+          </button>
+        )}
+      </form>
       </div>
     </div>
   );

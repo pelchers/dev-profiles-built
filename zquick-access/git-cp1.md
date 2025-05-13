@@ -89,3 +89,20 @@ Each command performs a specific function in the workflow:
 5. `git merge` - Combines changes from one branch into another
 
 This process ensures your comprehensive guide is saved in your working branch and then propagated to both the main and project-setup branches, keeping everything in sync.
+
+
+
+
+
+# 1. First, add and commit changes to the current project-setup-plus branch
+git add .
+git commit -m "Fix profile flow to connect with database and auth flow"
+git push origin project-setup-plus
+
+# 2. Create and push to a new branch called working-database-auth-profile-flow-boiler-3-no-github-automation
+git checkout -b "working-database-auth-profile-flow-boiler-3-no-github-automation"
+git push -u origin "working-database-auth-profile-flow-boiler-3-no-github-automation"
+
+# 3. Create and push to a new branch called working-branch-1
+git checkout -b working-branch-1
+git push -u origin working-branch-1

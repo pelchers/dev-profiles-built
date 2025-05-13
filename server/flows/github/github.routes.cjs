@@ -9,6 +9,20 @@ const {
 
 const router = express.Router();
 
+// Test GitHub endpoint
+router.get('/test', (req, res) => {
+  res.json({
+    status: 'GitHub integration is working',
+    time: new Date().toISOString(),
+    endpoints: [
+      { path: '/api/github/sync', method: 'POST', auth: true, description: 'Sync user GitHub profile' },
+      { path: '/api/github/profile/:username', method: 'GET', auth: false, description: 'Get GitHub profile by username' },
+      { path: '/api/github/profile', method: 'PUT', auth: true, description: 'Update GitHub profile' },
+      { path: '/api/github/extract-username', method: 'POST', auth: false, description: 'Extract username from GitHub URL' }
+    ]
+  });
+});
+
 // Sync GitHub profile data
 router.post('/sync', authenticateJWT, async (req, res) => {
   try {

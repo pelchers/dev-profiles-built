@@ -52,3 +52,28 @@ export default tseslint.config({
   },
 })
 ```
+
+## GitHub Integration
+
+The Dev Profiles application includes GitHub integration to showcase developer profiles and projects.
+
+### Features
+
+- **Profile Sync**: Connect your GitHub profile to automatically import your bio, avatar, and stats
+- **GitHub Stats**: Display your public repositories, followers, and other GitHub stats
+- **Auto-Updates**: Profiles can be manually synchronized with GitHub at any time
+
+### Setup
+
+1. Create a GitHub Personal Access Token (no special scopes required for public data)
+2. Add the token to your `.env` file as `GITHUB_TOKEN`
+3. Connect your GitHub profile in the app by entering your GitHub username or URL
+4. Click "Sync GitHub Data" to fetch and display your GitHub information
+
+### API Endpoints
+
+- `GET /api/github/test` - Test the GitHub integration
+- `POST /api/github/sync` - Sync the current user's GitHub profile
+- `GET /api/github/profile/:username` - Get a user's GitHub profile
+- `PUT /api/github/profile` - Update GitHub profile settings
+- `POST /api/github/extract-username` - Extract username from GitHub URL

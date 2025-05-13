@@ -9,17 +9,33 @@ async function syncGitHubProfile(userId) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { githubUsername: true }
+    where: { id: userId }
   });
 
-  if (!user?.githubUsername) {
-    throw new Error('GitHub username not found');
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Get GitHub username from user profile
+  // If not available, throw an error
+  if (!user.githubUsername && !user.githubUrl) {
+    throw new Error('GitHub username or URL is required');
+  }
+
+  let username = user.githubUsername;
+  
+  // Extract username from GitHub URL if no username is set but URL is
+  if (!username && user.githubUrl) {
+    try {
+      username = extractGitHubUsername(user.githubUrl);
+    } catch (error) {
+      throw new Error(`Invalid GitHub URL: ${error.message}`);
+    }
   }
 
   try {
     // Fetch GitHub profile data
-    const response = await axios.get(`https://api.github.com/users/${user.githubUsername}`, {
+    const response = await axios.get(`https://api.github.com/users/${username}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         ...(process.env.GITHUB_TOKEN && {
@@ -34,7 +50,8 @@ async function syncGitHubProfile(userId) {
     const updatedProfile = await prisma.user.update({
       where: { id: userId },
       data: {
-        githubId: githubData.id.toString(),
+        githubUsername: username,
+        githubId: githubData.id,
         githubAvatarUrl: githubData.avatar_url,
         githubHtmlUrl: githubData.html_url,
         githubBio: githubData.bio,
@@ -47,12 +64,25 @@ async function syncGitHubProfile(userId) {
         githubPublicRepos: githubData.public_repos,
         githubPublicGists: githubData.public_gists,
         githubCreatedAt: new Date(githubData.created_at),
-        githubUpdatedAt: new Date(githubData.updated_at)
+        githubUpdatedAt: new Date(githubData.updated_at),
+        githubProfile: githubData, // Store the full GitHub response
+        githubStats: {
+          // Create a simplified stats object for quick access
+          stars: githubData.public_repos * 2, // Placeholder - real stats would require more API calls
+          followers: githubData.followers,
+          following: githubData.following,
+          repos: githubData.public_repos,
+          gists: githubData.public_gists,
+          lastUpdated: new Date().toISOString()
+        }
       }
     });
 
     return updatedProfile;
   } catch (error) {
+    if (error.response && error.response.status === 404) {
+      throw new Error(`GitHub user '${username}' not found`);
+    }
     throw new Error(`Failed to sync GitHub profile: ${error.message}`);
   }
 }

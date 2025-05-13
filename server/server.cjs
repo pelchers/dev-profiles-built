@@ -60,10 +60,15 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../dist')));
+if (process.env.NODE_ENV !== 'development') {
+  // Ensure the static directory exists and has the right path
+  const staticPath = path.resolve(__dirname, '../dist');
+  console.log('Serving static files from:', staticPath);
   
-  // Handle SPA routing
+  // Serve static files
+  app.use(express.static(staticPath));
+  
+  // Handle SPA routing - this must come after API routes
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
       res.sendFile(path.resolve(__dirname, '../dist/index.html'));
@@ -76,6 +81,13 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
+
+// At the top of your main server file
+if (process.env.NODE_ENV === 'production') {
+  console.log('DATABASE_URL available:', !!process.env.DATABASE_URL);
+  console.log('JWT_SECRET available:', !!process.env.JWT_SECRET);
+  // Add other critical variables
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
