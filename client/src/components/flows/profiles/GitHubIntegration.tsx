@@ -87,17 +87,18 @@ export const GitHubIntegration: React.FC<GitHubIntegrationProps> = ({
             alt={`${user.githubUsername}'s avatar`}
             className="w-12 h-12 rounded-full mr-3"
           />
-          <div>
+          <div className="overflow-hidden">
             <a 
               href={user.githubHtmlUrl || `https://github.com/${user.githubUsername}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline font-medium"
+              className="text-blue-600 hover:underline font-medium truncate block"
+              title={user.githubHtmlUrl || `https://github.com/${user.githubUsername}`}
             >
               {user.githubUsername}
             </a>
             {user.githubBio && (
-              <p className="text-sm text-gray-600">{user.githubBio}</p>
+              <p className="text-sm text-gray-600 line-clamp-2">{user.githubBio}</p>
             )}
           </div>
         </div>

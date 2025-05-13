@@ -327,6 +327,15 @@ function ProfileField({
     return val || [];
   };
 
+  // Format JSON/Object for display
+  const formatJsonForDisplay = (data: any): string => {
+    if (!data) return 'No data';
+    if (typeof data === 'object') {
+      return JSON.stringify(data, null, 2);
+    }
+    return String(data);
+  };
+
   // Handle JSON fields
   if (field.type === 'json') {
     const parsedValue = parseJsonField(value);
@@ -392,6 +401,37 @@ function ProfileField({
           ) : (
             <span className="text-gray-400">No education added yet</span>
           )}
+        </div>
+      );
+    }
+  }
+  
+  // Handle githubStats specifically
+  if (field.key === 'githubStats') {
+    // Parse it if it's a string
+    let stats = value;
+    if (typeof stats === 'string') {
+      try {
+        stats = JSON.parse(stats);
+      } catch {
+        stats = {};
+      }
+    }
+    
+    // If it's an object, format it for display
+    if (stats && typeof stats === 'object') {
+      return (
+        <div className="mb-4">
+          <label className="block font-medium mb-1">{field.label}</label>
+          <div className="p-2 bg-gray-50 rounded">
+            {Object.keys(stats).length > 0 ? (
+              <pre className="text-sm whitespace-pre-wrap">
+                {JSON.stringify(stats, null, 2)}
+              </pre>
+            ) : (
+              <span className="text-gray-400">No stats available</span>
+            )}
+          </div>
         </div>
       );
     }
@@ -584,7 +624,19 @@ function ProfileField({
     return (
       <div className="mb-4">
         <label className="block font-medium mb-1">{field.label}</label>
-        <div className="p-2 bg-gray-50 rounded">{value || <span className="text-gray-400">Not set</span>}</div>
+        <div className="p-2 bg-gray-50 rounded">
+          {value ? (
+            typeof value === 'object' ? (
+              <pre className="text-sm whitespace-pre-wrap">
+                {JSON.stringify(value, null, 2)}
+              </pre>
+            ) : (
+              value
+            )
+          ) : (
+            <span className="text-gray-400">Not set</span>
+          )}
+        </div>
       </div>
     );
   }
@@ -622,7 +674,19 @@ function ProfileField({
           placeholder={field.label}
         />
       ) : (
-        <div className="p-2">{value || <span className="text-gray-400">Not set</span>}</div>
+        <div className="p-2">
+          {value ? (
+            typeof value === 'object' ? (
+              <pre className="text-sm whitespace-pre-wrap">
+                {JSON.stringify(value, null, 2)}
+              </pre>
+            ) : (
+              value
+            )
+          ) : (
+            <span className="text-gray-400">Not set</span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -1443,23 +1507,23 @@ export default function ProfilePage() {
           <>
             {/* GitHub Connected UI */}
             {profileData.githubAvatarUrl && (
-              <div className="flex items-center mb-4">
+              <div className="flex flex-wrap items-start mb-4">
                 <img
                   src={profileData.githubAvatarUrl}
                   alt={`${profileData.githubUsername}'s GitHub avatar`}
                   className="w-16 h-16 rounded-full mr-4"
                 />
-                <div>
+                <div className="flex-1 min-w-0">
                   <a
                     href={profileData.githubHtmlUrl || `https://github.com/${profileData.githubUsername}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline font-medium text-lg"
+                    className="text-blue-600 hover:underline font-medium text-lg break-all"
                   >
                     {profileData.githubUsername}
                   </a>
                   {profileData.githubBio && (
-                    <p className="text-sm text-gray-600 mt-1">{profileData.githubBio}</p>
+                    <p className="text-sm text-gray-600 mt-1 break-words">{profileData.githubBio}</p>
                   )}
                 </div>
               </div>
@@ -1501,7 +1565,7 @@ export default function ProfilePage() {
                     href={profileData.githubBlog.startsWith('http') ? profileData.githubBlog : `https://${profileData.githubBlog}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-2 block bg-gray-50 rounded text-blue-600 hover:underline"
+                    className="p-2 block bg-gray-50 rounded text-blue-600 hover:underline break-all"
                   >
                     {profileData.githubBlog}
                   </a>
@@ -1638,7 +1702,7 @@ export default function ProfilePage() {
       )}
 
       {/* Rest of the existing JSX */}
-      <div className="max-w-3xl mx-auto p-6 space-y-8">
+      <div className="max-w-5xl mx-auto p-6 space-y-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Profile</h1>
         {isOwner && (
